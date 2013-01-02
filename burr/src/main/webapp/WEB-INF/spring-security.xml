@@ -1,0 +1,26 @@
+<beans:beans xmlns="http://www.springframework.org/schema/security"
+	xmlns:beans="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+    http://www.springframework.org/schema/security
+    http://www.springframework.org/schema/security/spring-security-3.0.3.xsd">
+	<!-- twilio needs access we need to IP whitelist -->
+	<http>
+	    <intercept-url pattern="/burr/twilio/*" access="IS_AUTHENTICATED_ANONYMOUSLY" />
+		<intercept-url pattern="/**" access="ROLE_USER" />
+		<http-basic />
+		<anonymous />
+	</http>  
+
+	<authentication-manager>
+		<authentication-provider>
+		    <password-encoder hash="sha" />
+			<user-service>
+				<user name="jefferson" password="7496226c17d4d0a770cea72eebb659c16753b956" authorities="ROLE_USER" />
+				<user name="johnson" password="74bf5e46ad26e4bacf9f4c6acfb8e83dae8a9997" authorities="ROLE_USER" />
+			</user-service>
+		</authentication-provider>
+	</authentication-manager>
+
+</beans:beans>
