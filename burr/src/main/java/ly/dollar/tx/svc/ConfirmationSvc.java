@@ -102,9 +102,9 @@ public class ConfirmationSvc {
 		UserMessage m = userMessageDao.findByType("UNKOWN_USER");
 		String ms = m.getMessageBody();
 		String amount = ms.replaceFirst("@amount",i.getAmount().toPlainString());
-		String payee = amount.replaceAll("@payer", i.getPayeeHandle());
+		String payee = amount.replaceAll("@payer", i.getPayerHandle());
 		String hashtag = payee.replaceFirst("@hashtag", i.getHashtag());
-		String end = hashtag.replaceFirst("@unkown", unknownUser);
+		String end = hashtag.replaceFirst("@unknown", unknownUser);
 		this.sendSms(phone, end);
 	
 	}

@@ -238,7 +238,7 @@ public class IouOrderDao {
 	public IouOrder updateStatusToVoid(String id) {
 		Query q = new Query();
 		q.addCriteria(where("_id").is(id));
-		q.addCriteria(where("status").is(IouOrder.Status.OPEN));
+		q.addCriteria(where("status").in(IouOrder.Status.OPEN, IouOrder.Status.PENDING_CONFIRMATION));
 		
 		Update u = new Update();
 		u.set("status", IouOrder.Status.VOID);
