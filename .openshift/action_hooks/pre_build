@@ -3,4 +3,3 @@
 # available.  Otherwise it will execute while your application is stopped
 # before the build step.  This script gets executed directly, so it
 # could be python, php, ruby, etc.
-mvn install:install-file -Dfile=/Users/robertja/.m2/repository/ly/dollar/dwolla4j/1.4.0/dwolla4j-1.4.0.jar -DgroupId=ly.dollar -DartifactId=dwolla4j -Dversion=1.4.0 -Dpackaging=jar
