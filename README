@@ -13,7 +13,6 @@ pom.xml - Maven build file
 .openshift/action_hooks/post_start_jbossas-7 - Script that gets run after AS7 is started
 .openshift/action_hooks/pre_stop_jbossas-7 - Script that gets run prior to stopping AS7
 .openshift/action_hooks/post_stop_jbossas-7 - Script that gets run after AS7 is stopped
-.openshift/markers - directory for files used to control application behavior. See README in markers directory
 
 
 Notes about layout
@@ -29,10 +28,6 @@ Details about layout and deployment options
 ==================
 There are two options for deploying content to the JBoss Application Server within OpenShift. Both options
 can be used together (i.e. build one archive from source and others pre-built)
-
-NOTE: Under most circumstances the .dodeploy file markers should not be added to the deployments directory.
-These lifecycle files will be created in the runtime deployments directory (can be seen by SSHing into the application),
-but should not be added to the git repo.
 
 1) (Preferred) You can upload your content in a Maven src structure as is this sample project and on 
 git push have the application built and deployed.  For this to work you'll need your pom.xml at the 
