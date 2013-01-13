@@ -165,7 +165,27 @@ public class UserOnboardSvcImpl extends MessageService implements
 		return null;
 	}
 
-	
+	public DollarlyUserResponse create(String userName, Long id)
+               throws Exception {
+
+       DefaultHttpClient httpClient = new DefaultHttpClient();
+       Credentials credentials = new UsernamePasswordCredentials("hamilton",
+                       "Wi11u|$hit53$Bs4m3");
+       httpClient.getCredentialsProvider().setCredentials(
+                       org.apache.http.auth.AuthScope.ANY, credentials);
+       ClientExecutor clientExecutor = new ApacheHttpClient4Executor(
+                       httpClient);
+       ClientRequestFactory fac = new ClientRequestFactory(clientExecutor,
+                       new URI(userBaseUrl));
+       ClientRequest request = fac.createRequest(twitterCreateUrl + userName
+                       + "?sysId=" + id.toString());
+       ClientResponse<DollarlyUserResponse> dur = request
+                       .put(DollarlyUserResponse.class);
+       DollarlyUserResponse d = dur.getEntity();
+       System.out.println("User Onboarded:" + d.toString());
+       return d;
+	}
+
 
 	public DollarlyAnonPhoneResponse createAnonPhone(Sms sms, String entity)
 			throws Exception {
