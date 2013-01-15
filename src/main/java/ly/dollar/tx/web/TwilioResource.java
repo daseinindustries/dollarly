@@ -34,8 +34,8 @@ import ly.dollar.tx.svc.UserOnboardSvcImpl;
 public class TwilioResource {
 
 
-	public static final String userBaseUrl = "https://jefferson-dit.rhcloud.com/DITShift/";
-	public static final String phoneVerifyURL = "https://jefferson-dit.rhcloud.com/DITShift/api/v3/dollarly/users/confirmation/phone/";
+	public static final String userBaseUrl = "https://thomas-currensea.rhcloud.com/jefferson/user/";
+	public static final String phoneVerifyURL = "https://thomas-currensea.rhcloud.com/jefferson/user/confirmation/phone/";
 
 	private IouOrderSvc iouOrderSvc;
 	private ConfirmationSvc confirmationSvc;
