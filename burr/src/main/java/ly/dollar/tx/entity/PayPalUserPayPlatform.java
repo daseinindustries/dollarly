@@ -17,6 +17,8 @@ public class PayPalUserPayPlatform extends UserPayPlatform {
 	private String lastName;
 	private String phone;
 	private String email;
+	private String preApprovalKey;
+	
 	public Emails getEmails() {
 		return emails;
 	}
@@ -66,6 +68,18 @@ public class PayPalUserPayPlatform extends UserPayPlatform {
 
 	public void setEmail(String email) {
 		this.email = email;
+	}
+
+
+
+
+	public String getPreApprovalKey() {
+		return preApprovalKey;
+	}
+
+
+	public void setPreApprovalKey(String preApprovalKey) {
+		this.preApprovalKey = preApprovalKey;
 	}
 
 
