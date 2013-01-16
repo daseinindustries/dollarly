@@ -55,7 +55,10 @@ class SmsActor(iouOrderSvc: IouOrderSvc, userUrl: String, userNameUrl: String, l
             case Some(tx) =>
 
               val iou = new IouOrder(tx)
-
+              
+              
+              //	MAKE BACKWARDS COMPATIBLE
+              
               iou.setExtSystem(ExtSystem.SMS)
               iou.setExtSystemId(sms.getExtSystemId())
               iou.setExtSystemUserName(sms.getSenderPhone())
@@ -139,13 +142,14 @@ class SmsActor(iouOrderSvc: IouOrderSvc, userUrl: String, userNameUrl: String, l
 
               } else {
                 iouOrderSvc.createSmsIou(iou);
-                if (iou.getPayerFundingStatus().equals("DWOLLA_FULL") && iou.getPayeeFundingStatus().equals("DWOLLA_FULL")) {
+                if ((iou.getPayerFundingStatus().equals("DWOLLA_FULL") && iou.getPayeeFundingStatus().equals("DWOLLA_FULL")) ||
+                		(iou.getPayerFundingStatus().equals("PAYPAL_FULL") && iou.getPayeeFundingStatus().equals("PAYPAL_FULL"))){
                   System.out.println("SMS PAY send conf to: " + payerHandle + " and receipt to: " + payeeHandle);
                   val iu = iouOrderSvc.getByExternalSystemIdAndName(iou.getExtSystemId(), ExtSystem.SMS.toString());
                   System.out.println("IOU post-create, pre-confirm: " + iu.toString());
                   iouOrderSvc.updateStatusToConfirm(iu.getId());
                   confirmationSvc.request(payerPhone, iu, payeePhone);
-
+                  
                 } else {
                   if (payeePhone != null) {
                     userOnboardSvc.sendOnboardingMessage(iou, payerPhone, payeePhone);

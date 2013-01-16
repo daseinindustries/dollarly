@@ -24,6 +24,9 @@ import ly.dollar.tx.entity.UserMessage;
 public class UserOnboardSvcImpl extends MessageService implements
 		UserOnboardSvc {
 
+	// MAKE BACKWARDS COMPATIBLE
+	
+	
 	public static final String twitterCreateUrl = "https://jefferson-dit.rhcloud.com/DITShift/api/v3/dollarly/users/twitter/";
 	public static final String smsCreateUrl = "https://thomas-currensea.rhcloud.com/jefferson/user/new/";
 	public static final String phoneCreateUrl = "https://jefferson-dit.rhcloud.com/DITShift/api/v3/dollarly/users/phone/";
@@ -45,13 +48,19 @@ public class UserOnboardSvcImpl extends MessageService implements
 		this.sendSms(to, message);
 	}
 
+	
+	//			CHANGE THE STATES -- BACKWARDS COMPATIBLE
+	
+	
+	
 	public void sendOnboardingMessage(IouOrder iou, Long payerPhone, Long payeePhone) {
 		String payeeMessage;
 		String payerMessage;
 		if (iou.getPayeeFundingStatus().equals("NEW_PHONE")) {
 			//payeeMessage = this.makeNewPhoneUserMessage(iou, false);
 			payeeMessage = this.createNewPhoneUserMessage(iou, false);
-		} else if (iou.getPayeeFundingStatus().equals("DWOLLA_FULL")) {
+		} else if (iou.getPayeeFundingStatus().equals("DWOLLA_FULL") ||
+				iou.getPayeeFundingStatus().equals("PAYPAL_FULL")) {
 			
 			//payeeMessage = this.makeDwollaPartialMessage(iou, false);
 			payeeMessage = this.createFSUserMessage(iou, false);
@@ -64,7 +73,8 @@ public class UserOnboardSvcImpl extends MessageService implements
 		if (iou.getPayerFundingStatus().equals("NEW_PHONE")) {
 			
 			payerMessage = this.createNewPhoneUserMessage(iou, true);
-		} else if (iou.getPayerFundingStatus().equals("DWOLLA_FULL")) {
+		} else if (iou.getPayerFundingStatus().equals("DWOLLA_FULL")||
+				iou.getPayerFundingStatus().equals("PAYPAL_FULL")) {
 	
 			
 			payerMessage = this.createFSUserMessage(iou, true);
