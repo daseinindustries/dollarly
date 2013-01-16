@@ -6,7 +6,7 @@
 	<groupId>burr</groupId>
 	<artifactId>burr</artifactId>
 	<packaging>war</packaging>
-	<version>1.0</version>
+	<version>3.0</version>
 	<name>burr</name>
 
 	<properties>

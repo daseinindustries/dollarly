@@ -11,10 +11,7 @@ import ly.dollar.tx.entity.Sms;
 
 public interface UserOnboardSvc
 {
-	DollarlyUserResponse create(String userName, Long id) throws Exception;
-	
-	@Deprecated
-	DollarlyUserResponse create(Sms sms, String entity) throws Exception;
+	 DollarlyUserResponse create(String userName, Long id) throws Exception;
 	
 	DollarlyAnonPhoneResponse createAnonPhone(Sms sms, String entity) throws Exception;
 	

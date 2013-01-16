@@ -55,18 +55,21 @@ class SmsActor(iouOrderSvc: IouOrderSvc, userUrl: String, userNameUrl: String, l
             case Some(tx) =>
 
               val iou = new IouOrder(tx)
-
+              
+              
+              //	MAKE BACKWARDS COMPATIBLE
+              
               iou.setExtSystem(ExtSystem.SMS)
               iou.setExtSystemId(sms.getExtSystemId())
               iou.setExtSystemUserName(sms.getSenderPhone())
               iou.setExtSystemDate(sms.getExtSystemDate())
-              var payeeTwitterHandle: String = "";
-              var payerTwitterHandle: String = "";
+              var payeeHandle: String = "";
+              var payerHandle: String = "";
               var payeePhone: JavaLong = null;
               var payerPhone: JavaLong = new JavaLong(sms.getSenderPhone());
 
               if (tx.getMode().equals("USERNAME")) {
-                payeeTwitterHandle = sms.getReceiverUserName()
+                payeeHandle = sms.getReceiverUserName()
               } else {
                 payeePhone = new JavaLong(sms.getReceiverPhone())
               }
@@ -79,8 +82,8 @@ class SmsActor(iouOrderSvc: IouOrderSvc, userUrl: String, userNameUrl: String, l
                   if (user.getRegStatus().equals("NEW_PHONE"))
                     iou.setPayerHandle(payerPhone.toString());
                   else {
-                    payerTwitterHandle = user.getComPlatform(ExtSystem.TWITTER).getUserName();
-                    iou.setPayerHandle(payerTwitterHandle);
+                    payerHandle = user.getComPlatform(ExtSystem.FACEBOOK).getUserName();
+                    iou.setPayerHandle(payerHandle);
                   }
                 case None =>
                   val resp = userOnboardSvc.createAnonPhone(sms, "payer")
@@ -97,8 +100,8 @@ class SmsActor(iouOrderSvc: IouOrderSvc, userUrl: String, userNameUrl: String, l
                     if (ouser.getRegStatus().equals("NEW_PHONE"))
                       iou.setPayeeHandle(payeePhone.toString());
                     else {
-                      payeeTwitterHandle = ouser.getComPlatform(ExtSystem.TWITTER).getUserName();
-                      iou.setPayeeHandle(payeeTwitterHandle);
+                      payeeHandle = ouser.getComPlatform(ExtSystem.FACEBOOK).getUserName();
+                      iou.setPayeeHandle(payeeHandle);
                     }
                   case None =>
                     val resp = userOnboardSvc.createAnonPhone(sms, "payee") // <-- Need to grab this mentionee's id ?
@@ -113,7 +116,7 @@ class SmsActor(iouOrderSvc: IouOrderSvc, userUrl: String, userNameUrl: String, l
                     System.out.println("payee: " + ouser.toString())
                     iou.setPayeeUserId(ouser.getId())
                     iou.setPayeeFundingStatus(ouser.getRegStatus());
-                    iou.setPayeeHandle(payeeTwitterHandle);
+                    iou.setPayeeHandle(payeeHandle);
                     //assumes payee has phone
                     if (ouser.getPhone() != null) {
                       iou.setMention(ouser.getPhone().toString());
@@ -125,9 +128,9 @@ class SmsActor(iouOrderSvc: IouOrderSvc, userUrl: String, userNameUrl: String, l
                     }
 
                   case None =>
-                    //val resp = userOnboardSvc.createAnonTwitter(twitter, "payee") 
+                    //val resp = userOnboardSvc.createAnonFACEBOOK(twitter, "payee") 
                     iou.setPayeeFundingStatus("UNKNOWN_USER");
-                    iou.setPayeeHandle(payeeTwitterHandle);
+                    iou.setPayeeHandle(payeeHandle);
 
                 }
               }
@@ -139,13 +142,14 @@ class SmsActor(iouOrderSvc: IouOrderSvc, userUrl: String, userNameUrl: String, l
 
               } else {
                 iouOrderSvc.createSmsIou(iou);
-                if (iou.getPayerFundingStatus().equals("DWOLLA_FULL") && iou.getPayeeFundingStatus().equals("DWOLLA_FULL")) {
-                  System.out.println("SMS PAY send conf to: " + payerTwitterHandle + " and receipt to: " + payeeTwitterHandle);
+                if ((iou.getPayerFundingStatus().equals("DWOLLA_FULL") && iou.getPayeeFundingStatus().equals("DWOLLA_FULL")) ||
+                		(iou.getPayerFundingStatus().equals("PAYPAL_FULL") && iou.getPayeeFundingStatus().equals("PAYPAL_FULL"))){
+                  System.out.println("SMS PAY send conf to: " + payerHandle + " and receipt to: " + payeeHandle);
                   val iu = iouOrderSvc.getByExternalSystemIdAndName(iou.getExtSystemId(), ExtSystem.SMS.toString());
                   System.out.println("IOU post-create, pre-confirm: " + iu.toString());
                   iouOrderSvc.updateStatusToConfirm(iu.getId());
                   confirmationSvc.request(payerPhone, iu, payeePhone);
-
+                  
                 } else {
                   if (payeePhone != null) {
                     userOnboardSvc.sendOnboardingMessage(iou, payerPhone, payeePhone);

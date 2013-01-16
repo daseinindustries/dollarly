@@ -24,10 +24,13 @@ import ly.dollar.tx.entity.UserMessage;
 public class UserOnboardSvcImpl extends MessageService implements
 		UserOnboardSvc {
 
+	// MAKE BACKWARDS COMPATIBLE
+	
+	
 	public static final String twitterCreateUrl = "https://jefferson-dit.rhcloud.com/DITShift/api/v3/dollarly/users/twitter/";
-	public static final String smsCreateUrl = "https://jefferson-dit.rhcloud.com/DITShift/api/v3/dollarly/users/sms/";
+	public static final String smsCreateUrl = "https://thomas-currensea.rhcloud.com/jefferson/user/new/";
 	public static final String phoneCreateUrl = "https://jefferson-dit.rhcloud.com/DITShift/api/v3/dollarly/users/phone/";
-	public static final String userBaseUrl = "https://jefferson-dit.rhcloud.com/DITShift/";
+	public static final String userBaseUrl = "https://thomas-currensea.rhcloud.com/jefferson/user/";
 
 	private IouOrderSvc iouOrderSvc;
 	private final UserMessageDao userMessageDao;
@@ -45,13 +48,19 @@ public class UserOnboardSvcImpl extends MessageService implements
 		this.sendSms(to, message);
 	}
 
+	
+	//			CHANGE THE STATES -- BACKWARDS COMPATIBLE
+	
+	
+	
 	public void sendOnboardingMessage(IouOrder iou, Long payerPhone, Long payeePhone) {
 		String payeeMessage;
 		String payerMessage;
 		if (iou.getPayeeFundingStatus().equals("NEW_PHONE")) {
 			//payeeMessage = this.makeNewPhoneUserMessage(iou, false);
 			payeeMessage = this.createNewPhoneUserMessage(iou, false);
-		} else if (iou.getPayeeFundingStatus().equals("DWOLLA_FULL")) {
+		} else if (iou.getPayeeFundingStatus().equals("DWOLLA_FULL") ||
+				iou.getPayeeFundingStatus().equals("PAYPAL_FULL")) {
 			
 			//payeeMessage = this.makeDwollaPartialMessage(iou, false);
 			payeeMessage = this.createFSUserMessage(iou, false);
@@ -64,7 +73,8 @@ public class UserOnboardSvcImpl extends MessageService implements
 		if (iou.getPayerFundingStatus().equals("NEW_PHONE")) {
 			
 			payerMessage = this.createNewPhoneUserMessage(iou, true);
-		} else if (iou.getPayerFundingStatus().equals("DWOLLA_FULL")) {
+		} else if (iou.getPayerFundingStatus().equals("DWOLLA_FULL")||
+				iou.getPayerFundingStatus().equals("PAYPAL_FULL")) {
 	
 			
 			payerMessage = this.createFSUserMessage(iou, true);
@@ -166,51 +176,31 @@ public class UserOnboardSvcImpl extends MessageService implements
 	}
 
 	public DollarlyUserResponse create(String userName, Long id)
-			throws Exception {
+               throws Exception {
 
-		DefaultHttpClient httpClient = new DefaultHttpClient();
-		Credentials credentials = new UsernamePasswordCredentials("hamilton",
-				"Wi11u|$hit53$Bs4m3");
-		httpClient.getCredentialsProvider().setCredentials(
-				org.apache.http.auth.AuthScope.ANY, credentials);
-		ClientExecutor clientExecutor = new ApacheHttpClient4Executor(
-				httpClient);
-		ClientRequestFactory fac = new ClientRequestFactory(clientExecutor,
-				new URI(userBaseUrl));
-		ClientRequest request = fac.createRequest(twitterCreateUrl + userName
-				+ "?sysId=" + id.toString());
-		ClientResponse<DollarlyUserResponse> dur = request
-				.put(DollarlyUserResponse.class);
-		DollarlyUserResponse d = dur.getEntity();
-		System.out.println("User Onboarded:" + d.toString());
-		return d;
+       DefaultHttpClient httpClient = new DefaultHttpClient();
+       Credentials credentials = new UsernamePasswordCredentials("hamilton",
+                       "Wi11u|$hit53$Bs4m3");
+       httpClient.getCredentialsProvider().setCredentials(
+                       org.apache.http.auth.AuthScope.ANY, credentials);
+       ClientExecutor clientExecutor = new ApacheHttpClient4Executor(
+                       httpClient);
+       ClientRequestFactory fac = new ClientRequestFactory(clientExecutor,
+                       new URI(userBaseUrl));
+       ClientRequest request = fac.createRequest(twitterCreateUrl + userName
+                       + "?sysId=" + id.toString());
+       ClientResponse<DollarlyUserResponse> dur = request
+                       .put(DollarlyUserResponse.class);
+       DollarlyUserResponse d = dur.getEntity();
+       System.out.println("User Onboarded:" + d.toString());
+       return d;
 	}
 
-	@Deprecated
-	public DollarlyUserResponse create(Sms sms, String entity) throws Exception {
-		DefaultHttpClient httpClient = new DefaultHttpClient();
-		Credentials credentials = new UsernamePasswordCredentials("hamilton",
-				"Wi11u|$hit53$Bs4m3");
-		httpClient.getCredentialsProvider().setCredentials(
-				org.apache.http.auth.AuthScope.ANY, credentials);
-		ClientExecutor clientExecutor = new ApacheHttpClient4Executor(
-				httpClient);
-		ClientRequestFactory fac = new ClientRequestFactory(clientExecutor,
-				new URI(userBaseUrl));
-		ClientRequest request = null;
-		if (entity == "payer")
-			request = fac.createRequest(smsCreateUrl + sms.getSenderPhone());
-		else if (entity == "payee")
-			request = fac.createRequest(smsCreateUrl + sms.getReceiverPhone());
-
-		ClientResponse<DollarlyUserResponse> dur = request
-				.put(DollarlyUserResponse.class);
-		DollarlyUserResponse d = dur.getEntity();
-		return d;
-	}
 
 	public DollarlyAnonPhoneResponse createAnonPhone(Sms sms, String entity)
 			throws Exception {
+	     
+
 		DefaultHttpClient httpClient = new DefaultHttpClient();
 		Credentials credentials = new UsernamePasswordCredentials("hamilton",
 				"Wi11u|$hit53$Bs4m3");

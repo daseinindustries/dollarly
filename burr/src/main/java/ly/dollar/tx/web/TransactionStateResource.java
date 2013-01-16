@@ -38,7 +38,7 @@ public class TransactionStateResource {
 
 		return Response.status(status).build();
 	}
-
+	
 	@POST
 	@Path("iou/{userId}/{phone}/{status}/handle/{handle}")
 	public void postAnonPhoneAuthedUpdate(@PathParam("userId") String userId, @PathParam("phone")String phone, 
@@ -65,7 +65,7 @@ public class TransactionStateResource {
 	@POST
 	@Path("iou/{userId}/{status}")
 	public Response postFSUpdate(@PathParam("userId") String userId,@PathParam("status") String status) {
-		System.out.println("UPDATE FS Dwolla CALLED: " + status);
+		System.out.println("UPDATE FS_FULL CALLED: " + status);
 
 			iouOrderSvc.updateUserFundingStatus(userId, status);
 			
