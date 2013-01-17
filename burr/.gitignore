@@ -2,3 +2,5 @@ target
 .metadata
 .DS_Store
 .settings
+.classpath
+.project
