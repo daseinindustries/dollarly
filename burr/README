@@ -84,7 +84,6 @@ files and tmp dirs):
 
 rhc app tidy -a appname
 
-
 Whether you choose option 1) or 2) the end result will be the application 
 deployed into the deployments directory. The deployments directory in the 
 JBoss Application Server distribution is the location end users can place 
