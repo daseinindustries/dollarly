@@ -83,7 +83,6 @@
         <property name="iouOrderSvc" ref="iouOrderSvc"/>
         <property name="confirmationSvc" ref="confirmationSvc"/>
     </bean>
-    
  
 	<bean id="inboundSmsResource" class="ly.dollar.tx.web.InboundSmsResource">
 		<property name="smsSvc" ref="smsSvc"/>
@@ -91,7 +90,6 @@
 
 	<!-- Svc -->
     
-     
      <bean id="confirmationSvc" class="ly.dollar.tx.svc.ConfirmationSvc">
 		<constructor-arg value="${twilio.accountSid}" />
 		<constructor-arg value="${twilio.authToken}" />
@@ -100,7 +98,8 @@
 		<constructor-arg ref="confirmationDao" />
 		<constructor-arg ref="userMessageDao" />
     </bean>
-      <bean id="phoneConfirmationSvc" class="ly.dollar.tx.svc.PhoneConfirmationSvc">
+    
+    <bean id="phoneConfirmationSvc" class="ly.dollar.tx.svc.PhoneConfirmationSvc">
 		<constructor-arg value="${twilio.accountSid}" />
 		<constructor-arg value="${twilio.authToken}" />
 		<constructor-arg value="${twilio.fromPhone}" />
@@ -108,11 +107,11 @@
 		<constructor-arg ref="phoneConfirmationDao" />
 		<constructor-arg ref="userMessageDao" />
     </bean>
-	<bean id="paymentSvc" class="ly.dollar.tx.svc.PaymentSvcDwollaImpl">
+    
+	<bean id="paymentSvc" class="ly.dollar.tx.svc.PaymentSvcPaypalImpl">
         <constructor-arg ref="paymentDao" />
      	<constructor-arg ref="transformSvc" />
-
-    </bean>
+	</bean>
     
     <bean id="userOnboardSvc" class="ly.dollar.tx.svc.UserOnboardSvcImpl">
     	<constructor-arg value="${twilio.accountSid}" />
@@ -127,9 +126,7 @@
         <constructor-arg ref="userTotalsDao" />
     </bean>
     
-    <bean id="transformSvc" class="ly.dollar.tx.svc.TransformSvc">
-    </bean>
-  
+    <bean id="transformSvc" class="ly.dollar.tx.svc.TransformSvc"/>
     
     <bean id="smsSvc" class="ly.dollar.tx.svc.SmsSvc">
         <constructor-arg ref="smsDao" />
