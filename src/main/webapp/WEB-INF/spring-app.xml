@@ -26,8 +26,7 @@
 			</list>
 		</property>
 	</bean> 
-	<!-- Totally did not fuck up
-	 -->
+
     <bean id="configSvc" class="ly.dollar.config.ConfigSvcMongoImpl">
         <constructor-arg ref="mongoTemplate" />
     </bean>

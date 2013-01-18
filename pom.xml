@@ -167,7 +167,8 @@
 			<artifactId>dwolla4j</artifactId>
 			<version>1.4.0</version>
 		</dependency>
-
+			<!-- NEW PAYPAL JAMS -->
+						
 		<dependency>
 			<groupId>com.paypal.sdk</groupId>
 			<artifactId>paypal-core</artifactId>
