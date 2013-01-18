@@ -3,3 +3,4 @@
 # available.  Otherwise it will execute while your application is stopped
 # before the build step.  This script gets executed directly, so it
 # could be python, php, ruby, etc.
+mvn install:install-file -Dfile=/Users/robertja/.m2/repository/com/paypal/sdk/paypal-core/1.1.0/paypal-core-1.1.jar -DgroupId=com.paypal.sdk -DartifactId=paypal-core -Dversion=1.1.0 -Dpackaging=jar

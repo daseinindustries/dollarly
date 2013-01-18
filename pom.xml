@@ -1,7 +1,7 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
- 
+
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>burr</groupId>
 	<artifactId>burr</artifactId>
@@ -87,10 +87,10 @@
 			<version>1.9.9</version>
 		</dependency>
 		<dependency>
-            <groupId>org.jboss.resteasy</groupId>
-            <artifactId>resteasy-spring</artifactId>
-            <version>2.2.1.GA</version>
-        </dependency>      
+			<groupId>org.jboss.resteasy</groupId>
+			<artifactId>resteasy-spring</artifactId>
+			<version>2.2.1.GA</version>
+		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-core</artifactId>
@@ -161,17 +161,28 @@
 			<artifactId>twiliojava</artifactId>
 			<version>3.3.5</version>
 		</dependency>
+
 		<dependency>
-            <groupId>ly.dollar</groupId>
-            <artifactId>dwolla4j</artifactId>
-            <version>1.4.0</version>
-        </dependency>
-        <dependency>
-      		<groupId>org.jasypt</groupId>
-      		<artifactId>jasypt</artifactId>
-      		<version>1.9.0</version>
-    	</dependency>
-		<!-- Compile Only --> 
+			<groupId>ly.dollar</groupId>
+			<artifactId>dwolla4j</artifactId>
+			<version>1.4.0</version>
+		</dependency>
+		<dependency>
+			<dependency>
+				<groupId>com.paypal.sdk</groupId>
+				<artifactId>paypal-core</artifactId>
+				<version>1.1.0</version>
+			</dependency>
+			<dependency>
+				<groupId>com.paypal.sdk</groupId>
+				<artifactId>adaptivepaymentssdk</artifactId>
+				<version>2.1.96</version>
+			</dependency>
+			<groupId>org.jasypt</groupId>
+			<artifactId>jasypt</artifactId>
+			<version>1.9.0</version>
+		</dependency>
+		<!-- Compile Only -->
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>servlet-api</artifactId>
@@ -218,7 +229,7 @@
 					<execution>
 						<goals>
 							<goal>compile</goal>
-							
+
 						</goals>
 					</execution>
 				</executions>
@@ -226,14 +237,14 @@
 					<sourceDir>src/main/scala</sourceDir>
 					<jvmArgs>
 						<jvmArg>-Xms1024m</jvmArg>
-						
+
 					</jvmArgs>
 				</configuration>
 			</plugin>
 		</plugins>
 	</build>
- 
-	<profiles> 
+
+	<profiles>
 		<profile>
 			<id>openshift</id>
 			<build>
