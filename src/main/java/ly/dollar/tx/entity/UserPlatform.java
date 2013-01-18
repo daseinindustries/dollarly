@@ -48,6 +48,8 @@ public abstract class UserPlatform
 		private String type;
 		private String token;
 		private String pin;
+		private String email;
+		private String preapprovalKey;
 
 		public String getName()
 		{
@@ -87,6 +89,22 @@ public abstract class UserPlatform
 		public void setPin(String pin)
 		{
 			this.pin = pin;
+		}
+
+		public String getEmail() {
+			return email;
+		}
+
+		public void setEmail(String email) {
+			this.email = email;
+		}
+
+		public String getPreapprovalKey() {
+			return preapprovalKey;
+		}
+
+		public void setPreapprovalKey(String preapprovalKey) {
+			this.preapprovalKey = preapprovalKey;
 		}
 	}
 

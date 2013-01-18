@@ -107,7 +107,12 @@
 		<constructor-arg ref="phoneConfirmationDao" />
 		<constructor-arg ref="userMessageDao" />
     </bean>
-	<bean id="paymentSvc" class="ly.dollar.tx.svc.PaymentSvcDwollaImpl">
+    
+    <bean id="paymentSvc" class="ly.dollar.tx.svc.PaymentSvcPaypalImpl">
+        <constructor-arg ref="paymentDao" />
+     	<constructor-arg ref="transformSvc" />
+	</bean>
+	<bean id="dwollaPaymentSvc" class="ly.dollar.tx.svc.PaymentSvcDwollaImpl">
         <constructor-arg ref="paymentDao" />
      	<constructor-arg ref="transformSvc" />
 
