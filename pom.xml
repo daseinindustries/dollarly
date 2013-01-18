@@ -167,17 +167,18 @@
 			<artifactId>dwolla4j</artifactId>
 			<version>1.4.0</version>
 		</dependency>
+
 		<dependency>
-			<dependency>
-				<groupId>com.paypal.sdk</groupId>
-				<artifactId>paypal-core</artifactId>
-				<version>1.1.0</version>
-			</dependency>
-			<dependency>
-				<groupId>com.paypal.sdk</groupId>
-				<artifactId>adaptivepaymentssdk</artifactId>
-				<version>2.1.96</version>
-			</dependency>
+			<groupId>com.paypal.sdk</groupId>
+			<artifactId>paypal-core</artifactId>
+			<version>1.1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.paypal.sdk</groupId>
+			<artifactId>adaptivepaymentssdk</artifactId>
+			<version>2.1.96</version>
+		</dependency>
+		<dependency>
 			<groupId>org.jasypt</groupId>
 			<artifactId>jasypt</artifactId>
 			<version>1.9.0</version>
