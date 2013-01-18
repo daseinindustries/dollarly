@@ -68,7 +68,7 @@ class PaymentProcessor(iouOrderSvc: IouOrderSvc, paySvc: PaymentSvc,
           po.fail(FailReason.FAILED_PAYMENT)
           
           //Dwolla Specific
-          if (lockedPayment.getExternalSystem() == ExtSystem.DWOLLA) {
+          if (lockedPayment.getExternalSystem().equals(ExtSystem.DWOLLA)) {
             if (lockedPayment.getExtSystemNotes().contains("Invalid account PIN")) {
               msgSvc.createAndSendInvalidDwollaPin(payer.getPhone(), po)
             } else if (lockedPayment.getExtSystemNotes().contains(
@@ -80,7 +80,7 @@ class PaymentProcessor(iouOrderSvc: IouOrderSvc, paySvc: PaymentSvc,
           }
           
           //PayPal Specific
-            if (lockedPayment.getExternalSystem() == ExtSystem.PAYPAL) {
+            if (lockedPayment.getExternalSystem().equals(ExtSystem.PAYPAL)) {
             if (lockedPayment.getExtSystemNotes().contains("Invalid account PIN")) {
               //msgSvc.createAndSendInvalidDwollaPin(payer.getPhone(), po)
             } else if (lockedPayment.getExtSystemNotes().contains(
