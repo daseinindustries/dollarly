@@ -82,7 +82,7 @@ public class TransactionStateResource {
 			@QueryParam("payerPhone") Long payerPhone, @QueryParam("payeePhone") Long payeePhone)
 	{	
 		IouOrder i;
-		
+		System.out.print("txId: " + txId + " status:" + status);
 		if(status.equals("pay") || status.equals("collect")){
 			i = iouOrderSvc.updateStatusToConfirm(txId);
 			if(i.getStatus() == IouOrder.Status.PENDING_CONFIRMATION){
