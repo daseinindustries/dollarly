@@ -63,7 +63,8 @@ public class ConfirmationDao {
 				 .and("phone").is(phone)
 				 .and("status").nin(Status.REPLIED, 
 								    Status.UNDELIVERABLE,
-							        Status.EXPIRED));
+							        Status.EXPIRED,
+							        Status.VOID));
 		
 		Update u = new Update();
 		u.set("status", Status.REPLIED);
@@ -100,6 +101,14 @@ public class ConfirmationDao {
 		Index statusIndex = new Index().on("status", Order.ASCENDING)
                                        .on("statusLastModifiedOn", Order.ASCENDING);
         ops.ensureIndex(statusIndex);
+	}
+
+
+	public Confirmation findById(String id) {
+		return mongo.findOne ( 
+				new Query(where("_id").is(id)),
+		    	Confirmation.class
+		   );
 	}
 
 }
