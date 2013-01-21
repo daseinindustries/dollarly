@@ -7,13 +7,13 @@ import java.util.Random;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 
-import ly.dollar.tx.CurrencyUtils;
 import ly.dollar.tx.dao.ConfirmationDao;
 import ly.dollar.tx.dao.UserMessageDao;
 import ly.dollar.tx.entity.Confirmation;
 import ly.dollar.tx.entity.ExtSystem;
 import ly.dollar.tx.entity.ExtSystemEntity;
 import ly.dollar.tx.entity.IouOrder;
+import ly.dollar.tx.entity.Reminder;
 import ly.dollar.tx.entity.UserMessage;
 
 import com.twilio.sdk.TwilioRestClient;
@@ -27,10 +27,11 @@ public class ConfirmationSvc {
 	private final ConfirmationDao confirmationDao;
 	private final String statusCallbackUrl;
 	private final UserMessageDao userMessageDao;
+	private final ReminderSvc reminderSvc;
 
 	public ConfirmationSvc(String twilioAccountSid, String twilioAuthToken,
 			String fromPhone, String statusCallbackUrl,
-			ConfirmationDao confirmationDao, UserMessageDao userMessageDao) {
+			ConfirmationDao confirmationDao, UserMessageDao userMessageDao, ReminderSvc reminderSvc) {
 		TwilioRestClient client = new TwilioRestClient(twilioAccountSid,
 				twilioAuthToken);
 		this.smsFactory = client.getAccount().getSmsFactory();
@@ -38,6 +39,7 @@ public class ConfirmationSvc {
 		this.statusCallbackUrl = statusCallbackUrl;
 		this.confirmationDao = confirmationDao;
 		this.userMessageDao = userMessageDao;
+		this.reminderSvc = reminderSvc;
 	}
 
 	public void request(Long phone, IouOrder iou, Long payeePhone) {
@@ -62,6 +64,8 @@ public class ConfirmationSvc {
 		c.setMessage(body);
 		System.out.println("CREATING CONFIRMATION: " + c.toString());
 		confirmationDao.create(c);
+		reminderSvc.createConfirmationReminder(this.getByPurchaseOrderId(iou.getId()), 
+				userMessageDao.findByType("PAYEE_NEW_COLLECTABLE_IOU").getId());
 	}
 	private String createRequestMessage(IouOrder iou, int code){
 		//String usa = CurrencyUtils.formatDecimal(iou.getAmount());
@@ -97,7 +101,43 @@ public class ConfirmationSvc {
 			return end;
 		}
 	}
-
+	
+	public void createAndSendPayeeLedgerMessage(IouOrder iou){
+		UserMessage m = userMessageDao.findByType("PAYEE_NEW_COLLECTABLE_IOU");
+		String ms = m.getMessageBody();
+		String amount = ms.replaceFirst("@amount", iou.getAmount().toPlainString());
+		String payee = amount.replaceAll("@payee", iou.getPayeeHandle());
+		String hashtag = payee.replaceAll("@hashtag", iou.getHashtag());
+		String end = hashtag.replaceAll("@payer", iou.getPayerHandle());
+		this.sendSms(Long.valueOf(iou.getMention()), end);
+	}
+	
+	
+	public void createAndSendReminderCollectConfirmation(Long payerPhone,
+			IouOrder iou, Confirmation c, Long payeePhone) {
+		UserMessage m = userMessageDao.findByType("LEDGER_COLLECT_CONFIRMATION_REMINDER");
+		String ms = m.getMessageBody();
+		String amount = ms.replaceFirst("@amount", iou.getAmount().toPlainString());
+		String payee = amount.replaceAll("@payee", iou.getPayeeHandle());
+		String hashtag = payee.replaceAll("@hashtag", iou.getHashtag());
+		String end = hashtag.replaceAll("@code", String.valueOf(c.getCode()));
+		String payer = end.replaceFirst("@payer", iou.getPayerHandle());
+		this.sendSms(payerPhone, payer);
+		
+	}
+	
+	public void createAndSendReminderPayConfirmation(Long payerPhone,
+			IouOrder iou, Confirmation c, Long payeePhone) {
+		UserMessage m = userMessageDao.findByType("LEDGER_PAY_CONFIRMATION_REMINDER");
+		String ms = m.getMessageBody();
+		String amount = ms.replaceFirst("@amount", iou.getAmount().toPlainString());
+		String payee = amount.replaceAll("@payee", iou.getPayeeHandle());
+		String hashtag = payee.replaceAll("@hashtag", iou.getHashtag());
+		String end = hashtag.replaceAll("@code", String.valueOf(c.getCode()));
+		String payer = end.replaceFirst("@payer", iou.getPayerHandle());
+		this.sendSms(payerPhone, payer);
+		
+	}
 	public void createAndSendUnknownUserMessage(Long phone, IouOrder i, String unknownUser){
 		UserMessage m = userMessageDao.findByType("UNKOWN_USER");
 		String ms = m.getMessageBody();
@@ -217,7 +257,9 @@ public class ConfirmationSvc {
 		return code;
 	}
 
-	
+	public Confirmation getById(String id){
+		return confirmationDao.findById(id);
+	}
 
 	public Confirmation getByPurchaseOrderId(String purchaseOrderId) {
 		return confirmationDao.findByPurchaseOrderId(purchaseOrderId);
@@ -246,8 +288,19 @@ public class ConfirmationSvc {
 	}
 
 	public Confirmation confirm(Long phone, Integer code) {
-		return confirmationDao.findAndConfirmByCodePhone(code, phone);
+		//kill the reminder
+		Confirmation c = confirmationDao.findAndConfirmByCodePhone(code, phone);
+		Reminder r = reminderSvc.getByEntityId(c.getId());
+		if(r != null){
+			r.setStatus(Reminder.Status.COMPLETE);
+		}
+		return c;
 
 	}
+
+
+
+
+
 
 }

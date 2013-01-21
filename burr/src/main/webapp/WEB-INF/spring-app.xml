@@ -26,8 +26,7 @@
 			</list>
 		</property>
 	</bean> 
-	<!-- Totally did not fuck up
-	 -->
+
     <bean id="configSvc" class="ly.dollar.config.ConfigSvcMongoImpl">
         <constructor-arg ref="mongoTemplate" />
     </bean>
@@ -50,6 +49,21 @@
         <constructor-arg ref="smsSvc" />
         <constructor-arg ref="userOnboardSvc" />
         <constructor-arg ref="confirmationSvc" />
+     </bean>
+     
+     <bean id="reminderProcessor" 
+		class="ly.dollar.tx.daemon.ReminderProcessor"
+		init-method="start" destroy-method="stop">
+		<constructor-arg ref="reminderSvc" />
+		<constructor-arg ref="iouReminderActor" />
+	</bean> 
+	
+	<bean id="iouReminderActor" 
+        class="ly.dollar.tx.daemon.IouReminderActor">
+        <constructor-arg ref="iouOrderSvc" />
+        <constructor-arg ref="confirmationSvc" />
+        <constructor-arg ref="reminderSvc" />
+        <constructor-arg ref="configSvc" />
      </bean>
   
     <bean id="paymentProcessor" 
@@ -83,6 +97,7 @@
         <property name="iouOrderSvc" ref="iouOrderSvc"/>
         <property name="confirmationSvc" ref="confirmationSvc"/>
     </bean>
+    
  
 	<bean id="inboundSmsResource" class="ly.dollar.tx.web.InboundSmsResource">
 		<property name="smsSvc" ref="smsSvc"/>
@@ -90,6 +105,7 @@
 
 	<!-- Svc -->
     
+     
      <bean id="confirmationSvc" class="ly.dollar.tx.svc.ConfirmationSvc">
 		<constructor-arg value="${twilio.accountSid}" />
 		<constructor-arg value="${twilio.authToken}" />
@@ -97,9 +113,9 @@
 		<constructor-arg value="${twilio.statusCallbackUrl}" />
 		<constructor-arg ref="confirmationDao" />
 		<constructor-arg ref="userMessageDao" />
+		<constructor-arg ref="reminderSvc" />
     </bean>
-    
-    <bean id="phoneConfirmationSvc" class="ly.dollar.tx.svc.PhoneConfirmationSvc">
+      <bean id="phoneConfirmationSvc" class="ly.dollar.tx.svc.PhoneConfirmationSvc">
 		<constructor-arg value="${twilio.accountSid}" />
 		<constructor-arg value="${twilio.authToken}" />
 		<constructor-arg value="${twilio.fromPhone}" />
@@ -108,10 +124,18 @@
 		<constructor-arg ref="userMessageDao" />
     </bean>
     
-	<bean id="paymentSvc" class="ly.dollar.tx.svc.PaymentSvcPaypalImpl">
+  	<bean id="paymentSvc" class="ly.dollar.tx.svc.PaymentSvcPaypalImpl">
         <constructor-arg ref="paymentDao" />
      	<constructor-arg ref="transformSvc" />
+     	<constructor-arg value="paypal.properties" />
+     	
 	</bean>
+    
+	<bean id="dwollaPaymentSvc" class="ly.dollar.tx.svc.PaymentSvcDwollaImpl">
+        <constructor-arg ref="paymentDao" />
+     	<constructor-arg ref="transformSvc" />
+
+    </bean>
     
     <bean id="userOnboardSvc" class="ly.dollar.tx.svc.UserOnboardSvcImpl">
     	<constructor-arg value="${twilio.accountSid}" />
@@ -126,13 +150,23 @@
         <constructor-arg ref="userTotalsDao" />
     </bean>
     
-    <bean id="transformSvc" class="ly.dollar.tx.svc.TransformSvc"/>
+    <bean id="transformSvc" class="ly.dollar.tx.svc.TransformSvc">
+    </bean>
+    
+     <bean id="reminderSvc" class="ly.dollar.tx.svc.ReminderSvc">
+        <constructor-arg ref="reminderDao" />
+    </bean>
+  
     
     <bean id="smsSvc" class="ly.dollar.tx.svc.SmsSvc">
         <constructor-arg ref="smsDao" />
     </bean>
     
 	<!-- Dao -->
+	
+	<bean id="reminderDao" class="ly.dollar.tx.dao.ReminderDao">
+        <constructor-arg ref="mongoTemplate" />
+    </bean>
  	<bean id="userTotalsDao" class="ly.dollar.tx.dao.UserTotalsDao">
         <constructor-arg ref="mongoTemplate" />
     </bean>

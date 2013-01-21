@@ -92,9 +92,9 @@ public class PaymentSvcPaypalImpl extends PaymentSvcImpl
     private boolean failed(PayResponse response)
     {
         boolean errors = false;
-        if (response.getError() == null || response.getError().size() == 0)
+        if (response.getError() != null && response.getError().size() > 0)
             errors = true;
-        if (response.getPayErrorList() == null || response.getPayErrorList().getPayError().size() == 0)
+        if (response.getPayErrorList() != null && response.getPayErrorList().getPayError().size() > 0)
             errors = true;
         return errors;
     }

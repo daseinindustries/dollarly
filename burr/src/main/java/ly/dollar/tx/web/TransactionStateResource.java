@@ -1,5 +1,7 @@
 package ly.dollar.tx.web;
 
+import java.util.Date;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -11,6 +13,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
+import ly.dollar.tx.entity.Confirmation;
 import ly.dollar.tx.entity.IouOrder;
 
 import ly.dollar.tx.svc.ConfirmationSvc;
@@ -20,8 +23,8 @@ import ly.dollar.tx.svc.IouOrderSvc;
 public class TransactionStateResource {
 	private IouOrderSvc iouOrderSvc;
 	private ConfirmationSvc confirmationSvc;
-	
-	//time to make nice
+
+	// time to make nice
 
 	@PUT
 	@Path("iou/{iouId}")
@@ -38,67 +41,95 @@ public class TransactionStateResource {
 
 		return Response.status(status).build();
 	}
-	
+
 	@POST
 	@Path("iou/{userId}/{phone}/{status}/handle/{handle}")
-	public void postAnonPhoneAuthedUpdate(@PathParam("userId") String userId, @PathParam("phone")String phone, 
-			@PathParam("status")String status,
+	public void postAnonPhoneAuthedUpdate(@PathParam("userId") String userId,
+			@PathParam("phone") String phone,
+			@PathParam("status") String status,
 			@PathParam("handle") String handle) {
-			System.out.println("UPDATE ANON CALLED: " + handle);
-			iouOrderSvc.updateAnonPhoneAuthStatus(phone, userId, status, handle);
-			
-		
+		System.out.println("UPDATE ANON CALLED: " + handle);
+		iouOrderSvc.updateAnonPhoneAuthStatus(phone, userId, status, handle);
 
 	}
-	
+
 	@POST
 	@Path("iou/{userId}/{status}/handle/{handle}")
-	public void postStatusUpdate(@PathParam("userId") String userId,@PathParam("status") String status,
+	public void postStatusUpdate(@PathParam("userId") String userId,
+			@PathParam("status") String status,
 			@PathParam("handle") String handle) {
 		System.out.println("UPDATE Status CALLED: " + handle);
 
-			iouOrderSvc.updateUserStatus(userId, status, handle);
-		
+		iouOrderSvc.updateUserStatus(userId, status, handle);
 
 	}
-	
+
 	@POST
 	@Path("iou/{userId}/{status}")
-	public Response postFSUpdate(@PathParam("userId") String userId,@PathParam("status") String status) {
-		System.out.println("UPDATE FS_FULL CALLED: " + status);
+	public Response postFSUpdate(@PathParam("userId") String userId,
+			@PathParam("status") String status) {
+		System.out.println("UPDATE FS Dwolla CALLED: " + status);
 
-			iouOrderSvc.updateUserFundingStatus(userId, status);
-			
-			return Response.status(Response.Status.OK).build();
-		
+		iouOrderSvc.updateUserFundingStatus(userId, status);
+
+		return Response.status(Response.Status.OK).build();
 
 	}
-	
-	//assumption here is two fully FS-ed users
+
+	// assumption here is two fully FS-ed users
 	@POST
 	@Path("iou/{txId}/status/{status}")
 	@Produces("application/json")
-	public IouOrder postTxAction(@PathParam("txId") String txId, @PathParam("status") String status, 
-			@QueryParam("payerPhone") Long payerPhone, @QueryParam("payeePhone") Long payeePhone)
-	{	
+	public IouOrder postTxAction(@PathParam("txId") String txId,
+			@PathParam("status") String status,
+			@QueryParam("payerPhone") Long payerPhone,
+			@QueryParam("payeePhone") Long payeePhone) {
 		IouOrder i;
-		
-		if(status.equals("pay") || status.equals("collect")){
-			i = iouOrderSvc.updateStatusToConfirm(txId);
-			if(i.getStatus() == IouOrder.Status.PENDING_CONFIRMATION){
-				confirmationSvc.request(payerPhone, i, payeePhone);
-				System.out.println("confirmation created!");
+		IouOrder iou = iouOrderSvc.getById(txId);
+
+		if (status.equals("pay") || status.equals("collect")) {
+
+			if (iou.getStatus() == IouOrder.Status.OPEN) {
+				i = iouOrderSvc.updateStatusToConfirm(txId);
+				if (i.getStatus() == IouOrder.Status.PENDING_CONFIRMATION) {
+					confirmationSvc.request(payerPhone, i, payeePhone);
+					System.out.println("confirmation created!");
+
+					return i;
+				}
+			} else if (iou.getStatus() == IouOrder.Status.PENDING_CONFIRMATION) {
+				Confirmation c = confirmationSvc.getByPurchaseOrderId(txId);
+				c.setStatusLastModifiedOn(new Date());
+				confirmationSvc.update(c);
+				if(status.equals("collect")){
+				confirmationSvc.createAndSendReminderCollectConfirmation(payerPhone,
+						iou, c, payeePhone);
+				return iou;
+				} else if(status.equals("pay")){
+					confirmationSvc.createAndSendReminderPayConfirmation(payerPhone,
+							iou, c, payeePhone);
+					return iou;
+				}
+			} else {
+				return iou;
 			}
+		} else if (status.equals("void")) {
+			if(iou.getStatus() == IouOrder.Status.OPEN){
+			i = iouOrderSvc.updateStatusToVoid(txId);
 			return i;
-		} else if (status.equals("void")){
-			i =iouOrderSvc.updateStatusToVoid(txId);
-			return i;
+			} else if(iou.getStatus() == IouOrder.Status.PENDING_CONFIRMATION){
+				i = iouOrderSvc.updateStatusToVoid(txId);
+				Confirmation c = confirmationSvc.getByPurchaseOrderId(txId);
+				c.setStatus(Confirmation.Status.VOID);
+				confirmationSvc.update(c);
+				return i;
+			}
 		} else {
-			throw new WebApplicationException(Response.Status.NOT_MODIFIED);
+			return iou;
 		}
-		
+		return iou;
 	}
-	
+
 	@GET
 	@Path("iou/{iouId}")
 	@Produces("application/json")

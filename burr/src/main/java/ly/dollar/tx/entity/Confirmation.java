@@ -18,7 +18,7 @@ public class Confirmation extends ExtSystemEntity implements Serializable {
 	
 	public enum Status
 	{
-		REQUESTED, DELIVERED, REPLIED, EXPIRED, UNDELIVERABLE
+		REQUESTED, DELIVERED, REPLIED, EXPIRED, UNDELIVERABLE, VOID
 	}
 	
 	
