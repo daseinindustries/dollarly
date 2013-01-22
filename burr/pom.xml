@@ -242,8 +242,8 @@
 				<configuration>
 					<sourceDir>src/main/scala</sourceDir>
 					<jvmArgs>
-						<jvmArg>-Xms1024m</jvmArg>
-
+					  <jvmArg>-Xms1024m</jvmArg>
+					  <jvmArg>-Xmx1024m</jvmArg>
 					</jvmArgs>
 				</configuration>
 			</plugin>
