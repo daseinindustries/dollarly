@@ -166,7 +166,7 @@
       <artifactId>dwolla4j</artifactId>
       <version>1.4.0</version>
       </dependency>
-    <!-- NEW PAYPAL JAMS -->
+
     <dependency>
       <groupId>com.thetransactioncompany</groupId>
       <artifactId>cors-filter</artifactId>
