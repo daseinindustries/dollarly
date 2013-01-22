@@ -2,6 +2,7 @@ package ly.dollar.tx.svc;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,22 +44,21 @@ public class PaymentSvcPaypalImpl extends PaymentSvcImpl
         payRequest.setActionType("PAY");
         payRequest.setFeesPayer("SENDER");
         payRequest.setCurrencyCode("USD");
-        payRequest.setTrackingId(payment.getId());
         payRequest.setCancelUrl("http://beta.dollar.ly?cancel"); // required but not relevant
         payRequest.setReturnUrl("http://beta.dollar.ly?return"); // required but not relevant
         payRequest.setRequestEnvelope(new RequestEnvelope("en_US"));
-        payRequest.setReceiverList(makeReceiver(payeeInfo));
+        payRequest.setTrackingId(payment.getId());
+        payRequest.setReceiverList(makeReceiver(payeeInfo, payment));
         payRequest.setSenderEmail(payerInfo.getEmail());
         payRequest.setPreapprovalKey(payerInfo.getPreapprovalKey());
         
         try
         {
-            System.out.println("payRequest=["+payRequest.toNVPString()+"]");
             PayResponse payResponse = paypalClient.pay(payRequest);
             if (failed(payResponse))
             {
-                printErrors(payment, payResponse);
-                throw new Exception("Unable to process Paypal transaction. See logs for details.");
+                printErrors(payment, payRequest, payResponse);
+                throw new Exception("Paypal transaction failed. See logs for details.");
             } else
             {
                 payment.setStatus(Status.PROCESSED);
@@ -73,14 +73,14 @@ public class PaymentSvcPaypalImpl extends PaymentSvcImpl
         }
         
         payment.setExtSystem(ExtSystem.PAYPAL);
-        System.out.println("payment="+payment);
+        System.out.println("payment="+payment.toString());
         paymentDao.update(payment);
     }
     
-    private ReceiverList makeReceiver(UserPayPlatform payeeInfo)
+    private ReceiverList makeReceiver(UserPayPlatform payeeInfo, Payment payment)
     {
         Receiver receiver = new Receiver();
-        receiver.setAmount(Double.parseDouble(".01"));
+        receiver.setAmount(payment.getAmount().doubleValue());
         receiver.setEmail(payeeInfo.getEmail());
         receiver.setPaymentType("PERSONAL");
         List<Receiver> receivers = new ArrayList<Receiver>();
@@ -91,41 +91,42 @@ public class PaymentSvcPaypalImpl extends PaymentSvcImpl
     
     private boolean failed(PayResponse response)
     {
-        boolean errors = false;
-        if (response.getError() != null && response.getError().size() > 0)
-            errors = true;
-        if (response.getPayErrorList() != null && response.getPayErrorList().getPayError().size() > 0)
-            errors = true;
-        return errors;
+        return (response.getError() != null && response.getError().size() > 0)
+                || (response.getPayErrorList() != null && response.getPayErrorList().getPayError().size() > 0);
     }
     
-    private void printErrors(Payment payment, PayResponse resp)
+    private void printErrors(Payment payment, PayRequest req, PayResponse resp)
     {
-        System.out.println("Payment id : " + payment.getId());
-        System.out.println("Pay errors:");
         try
         {
+            System.err.println("payRequest=["+req.toNVPString()+"]");
+        } catch (UnsupportedEncodingException e1)
+        {
+            // will never happen
+        }
+        
+        try
+        {
+            System.err.println("Pay errors:");
             for (PayError pe : resp.getPayErrorList().getPayError())
             {
-                System.out.println("\t" + pe.getError().getMessage());
+                System.err.println("\t" + pe.getError().getMessage());
             }
         } catch (Exception e)
         {
-            System.out.println("\tNone. " + e.getMessage());
+            System.err.println("\tNone. " + e.getMessage());
         }
-
-        List<ErrorData> errors = resp.getError();
-
-        System.out.println("Errors:");
+ 
         try
         {
-            for (ErrorData ed : errors)
+            System.err.println("Errors:");
+            for (ErrorData ed : resp.getError())
             {
-                System.out.println("\t" + ed.getMessage());
+                System.err.println("\t" + ed.getMessage());
             }
         } catch (Exception e)
         {
-            System.out.println("\tNone. " + e.getMessage());
+            System.err.println("\tNone. " + e.getMessage());
         }
     }
 
