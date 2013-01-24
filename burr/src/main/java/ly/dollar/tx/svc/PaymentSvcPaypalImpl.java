@@ -35,7 +35,7 @@ public class PaymentSvcPaypalImpl extends PaymentSvcImpl
     }
 
     @Override
-	public void execute(Payment payment, User payer, User payee)
+    public void execute(Payment payment, User payer, User payee)
     {
         UserPayPlatform payerInfo = payer.getPayPlatform(ExtSystem.PAYPAL);
         UserPayPlatform payeeInfo = payee.getPayPlatform(ExtSystem.PAYPAL);
@@ -53,20 +53,6 @@ public class PaymentSvcPaypalImpl extends PaymentSvcImpl
         payRequest.setPreapprovalKey(payerInfo.getPreapprovalKey());
         
         try
-<<<<<<< HEAD
-	    {
-		PayResponse payResponse = paypalClient.pay(payRequest);
-		if (failed(payResponse))
-		    {
-			printErrors(payment, payRequest, payResponse);
-			throw new Exception("Paypal transaction failed. See logs for details.");
-		    } else
-		    {
-			payment.setStatus(Status.PROCESSED);
-			payment.setExtSystemId(String.valueOf(payResponse.getPayKey()));
-			payment.succeed(payResponse.getPaymentExecStatus());
-		    }
-=======
         {
             PayResponse payResponse = paypalClient.pay(payRequest);
             if (failed(payResponse))
@@ -79,13 +65,12 @@ public class PaymentSvcPaypalImpl extends PaymentSvcImpl
                 payment.setExtSystemId(String.valueOf(payResponse.getPayKey()));
                 payment.succeed(payResponse.getPaymentExecStatus());
             }
->>>>>>> f1d1962ce0df68a993a8b940ff95d8e1c9cc5baf
 
-	    } catch (Exception e)
-	    {
-		payment.setStatus(Status.FAILED);
-		payment.fail(e.getMessage());
-	    }
+        } catch (Exception e)
+        {
+            payment.setStatus(Status.FAILED);
+            payment.fail(e.getMessage());
+        }
         
         payment.setExtSystem(ExtSystem.PAYPAL);
         System.out.println("payment="+payment.toString());
@@ -107,48 +92,12 @@ public class PaymentSvcPaypalImpl extends PaymentSvcImpl
     private boolean failed(PayResponse response)
     {
         return (response.getError() != null && response.getError().size() > 0)
-<<<<<<< HEAD
-	    || (response.getPayErrorList() != null && response.getPayErrorList().getPayError().size() > 0);
-=======
                 || (response.getPayErrorList() != null && response.getPayErrorList().getPayError().size() > 0);
->>>>>>> f1d1962ce0df68a993a8b940ff95d8e1c9cc5baf
     }
     
     private void printErrors(Payment payment, PayRequest req, PayResponse resp)
     {
         try
-<<<<<<< HEAD
-	    {
-		System.err.println("payRequest=["+req.toNVPString()+"]");
-	    } catch (UnsupportedEncodingException e1)
-	    {
-		// will never happen
-	    }
-        
-        try
-	    {
-		System.err.println("Pay errors:");
-		for (PayError pe : resp.getPayErrorList().getPayError())
-		    {
-			System.err.println("\t" + pe.getError().getMessage());
-		    }
-	    } catch (Exception e)
-	    {
-		System.err.println("\tNone. " + e.getMessage());
-	    }
- 
-        try
-	    {
-		System.err.println("Errors:");
-		for (ErrorData ed : resp.getError())
-		    {
-			System.err.println("\t" + ed.getMessage());
-		    }
-	    } catch (Exception e)
-	    {
-		System.err.println("\tNone. " + e.getMessage());
-	    }
-=======
         {
             System.err.println("payRequest=["+req.toNVPString()+"]");
         } catch (UnsupportedEncodingException e1)
@@ -179,7 +128,6 @@ public class PaymentSvcPaypalImpl extends PaymentSvcImpl
         {
             System.err.println("\tNone. " + e.getMessage());
         }
->>>>>>> f1d1962ce0df68a993a8b940ff95d8e1c9cc5baf
     }
 
 
