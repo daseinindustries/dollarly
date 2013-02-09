@@ -34,8 +34,8 @@ import ly.dollar.tx.svc.UserOnboardSvcImpl;
 public class TwilioResource {
 
 
-	public static final String userBaseUrl = "https://jefferson-dit.rhcloud.com/DITShift/";
-	public static final String phoneVerifyURL = "https://jefferson-dit.rhcloud.com/DITShift/api/v3/dollarly/users/confirmation/phone/";
+	public static final String userBaseUrl = "https://thomas-currensea.rhcloud.com/jefferson/user/";
+	public static final String phoneVerifyURL = "https://thomas-currensea.rhcloud.com/jefferson/user/confirmation/phone/";
 
 	private IouOrderSvc iouOrderSvc;
 	private ConfirmationSvc confirmationSvc;
@@ -62,7 +62,7 @@ public class TwilioResource {
 		//check for garbage <-- 1.1 Release
 		if(code != null){
 			
-		// if four digit, then po, if 5 digit, phone code
+		// if four digit, then po
 		if (code.intValue() < 10000) {
 			System.out.println("Searching for confirmation with phone=" + phone
 					+ " and code=" + code);
@@ -88,7 +88,7 @@ public class TwilioResource {
 					confirmationSvc.createAndSendExpireFailureMessage(phone, code, i);
 				}
 			}
-		} else {
+		} else { //else five digit phone verification
 			System.out.println("Phone Verification: confirmation with phone="
 					+ phone + " and code=" + code);
 			PhoneConfirmation pc = phoneConfirmationSvc.confirm(phone, code);
@@ -149,35 +149,6 @@ public class TwilioResource {
 		confirmationSvc.update(c);
 	}
 
-	@POST
-	@Path("status/phone/{userId}")
-	public void postPhoneStatus(@PathParam("userId") String userId,
-			@FormParam("SmsStatus") String smsStatus) {
-
-		// Validate this is not a duplicated request from Twilio
-		PhoneConfirmation pc = phoneConfirmationSvc.getByUserId(userId);
-		if (pc.getStatus() != PhoneConfirmation.Status.REQUESTED) {
-			System.out
-					.println("Dupe phone verification status update from Twilio. "
-							+ userId);
-			return;
-		}
-
-		if (smsStatus.equals("sent")) {
-			System.out.println("Got Phone Verification SMS from Twilio: "
-					+ smsStatus);
-
-			pc.setStatus(PhoneConfirmation.Status.DELIVERED);
-		} else {
-			pc.setStatus(PhoneConfirmation.Status.UNDELIVERABLE);
-			// p.fail(FailReason.UNCONFIRMABLE);
-			// transactionSvc.update(p);
-		}
-
-		pc.setStatusLastModifiedOn(new Date());
-		phoneConfirmationSvc.update(pc);
-	}
-
 	private void postPhoneConfirmation(String userId, Long phone)
 			throws Exception {
 		DefaultHttpClient httpClient = new DefaultHttpClient();
@@ -220,3 +191,33 @@ public class TwilioResource {
 	}
 
 }
+/*
+@POST
+@Path("status/phone/{userId}")
+public void postPhoneStatus(@PathParam("userId") String userId,
+		@FormParam("SmsStatus") String smsStatus) {
+
+	// Validate this is not a duplicated request from Twilio
+	PhoneConfirmation pc = phoneConfirmationSvc.getByUserId(userId);
+	if (pc.getStatus() != PhoneConfirmation.Status.REQUESTED) {
+		System.out
+				.println("Dupe phone verification status update from Twilio. "
+						+ userId);
+		return;
+	}
+
+	if (smsStatus.equals("sent")) {
+		System.out.println("Got Phone Verification SMS from Twilio: "
+				+ smsStatus);
+
+		pc.setStatus(PhoneConfirmation.Status.DELIVERED);
+	} else {
+		pc.setStatus(PhoneConfirmation.Status.UNDELIVERABLE);
+		// p.fail(FailReason.UNCONFIRMABLE);
+		// transactionSvc.update(p);
+	}
+
+	pc.setStatusLastModifiedOn(new Date());
+	phoneConfirmationSvc.update(pc);
+}
+*/

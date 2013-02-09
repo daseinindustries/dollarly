@@ -38,10 +38,22 @@ public class PhoneConfirmationDao {
 		mongo.save(c);
 	}
 	
+	/*
+	 * Use call hierarchy below
+	 * 
+	 * 
+	 */
 	public PhoneConfirmation findByUserId(String userId)
 	{
 		return mongo.findOne(
 				new Query(where("userId").is(userId)),
+				PhoneConfirmation.class);
+	}
+	
+	public PhoneConfirmation findByUserIdStatus(String userId, Status status)
+	{
+		return mongo.findOne(
+				new Query(where("userId").is(userId).and("status").in(status)),
 				PhoneConfirmation.class);
 	}
 	public PhoneConfirmation findByCodePhone(Integer code, Long phone)

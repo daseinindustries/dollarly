@@ -13,11 +13,8 @@ private static final long serialVersionUID = 1L;
 	
 	public enum Status
 	{
-		REQUESTED, DELIVERED, REPLIED, CONFIRMED, EXPIRED, UNDELIVERABLE
+		REQUESTED, DELIVERED, REPLIED, CONFIRMED, EXPIRED, UNDELIVERABLE, INVALID
 	}
-	
-	
-	
 	
 	@Id
 	private String id;

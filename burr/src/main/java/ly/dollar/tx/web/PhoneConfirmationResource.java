@@ -27,4 +27,14 @@ public class PhoneConfirmationResource {
 				" userId: " + userId);
 		phoneConfirmationSvc.request(phone, userId);
 	}
+	
+	@POST
+	@Path("new/{phone}/user/{userId}/{status}")
+	public void postNewPhoneConfirmation(@PathParam("userId") String userId,
+			@PathParam("phone") Long phone, @PathParam("status") String status)
+	{
+		
+		phoneConfirmationSvc.requestNewPhoneConfirmation(phone, userId, status);
+		
+	}
 }

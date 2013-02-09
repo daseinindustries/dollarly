@@ -12,6 +12,8 @@ public interface PaymentSvc
 	void update(Payment p);
 
 	void execute(Payment p, User payer, User payee);
+	
+	void updateTotals(Payment p);
 
 	/*
 	 * Retrieves the payment and changes its status to PROCESSING.

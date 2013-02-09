@@ -21,6 +21,8 @@ public class LedgerTotals implements Serializable{
 	private Long phone;
 	private BigDecimal openCollects = new BigDecimal(0);
 	private BigDecimal openPays = new BigDecimal(0);
+	private BigDecimal pastCollects = new BigDecimal(0);
+	private BigDecimal pastPays = new BigDecimal(0);
 	
 	
 	public String getId() {
@@ -53,6 +55,18 @@ public class LedgerTotals implements Serializable{
 	}
 	public void setOpenPays(BigDecimal openPays) {
 		this.openPays = openPays;
+	}
+	public BigDecimal getPastCollects() {
+		return pastCollects;
+	}
+	public void setPastCollects(BigDecimal pastCollects) {
+		this.pastCollects = pastCollects;
+	}
+	public BigDecimal getPastPays() {
+		return pastPays;
+	}
+	public void setPastPays(BigDecimal pastPays) {
+		this.pastPays = pastPays;
 	}
 	@Override
 	public String toString()

@@ -1,54 +1,27 @@
 package ly.dollar.tx.svc;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 import ly.dollar.integrations.dwolla.DwollaIntegrationAPI;
 import ly.dollar.integrations.dwolla.DwollaSendMoneyInfo;
 import ly.dollar.integrations.dwolla.DwollaTransactionResponse;
 import ly.dollar.tx.dao.PaymentDao;
+import ly.dollar.tx.dao.UserTotalsDao;
 import ly.dollar.tx.entity.ExtSystem;
 import ly.dollar.tx.entity.Payment;
 import ly.dollar.tx.entity.Payment.Status;
 import ly.dollar.tx.entity.User;
 import ly.dollar.tx.entity.UserPlatform.UserPayPlatform;
 
-public class PaymentSvcDwollaImpl implements PaymentSvc
+public class PaymentSvcDwollaImpl extends PaymentSvcImpl
 {
-	//private static final Logger logger = LoggerFactory.getLogger(PaymentSvcDwollaImpl.class);
 	
-	private final PaymentDao paymentDao;
 	private final DwollaIntegrationAPI dwollaClient;
-	private final TransformSvc transformSvc;
 
-
-	
-	
-	public PaymentSvcDwollaImpl(PaymentDao paymentDao, TransformSvc transformSvc)
+	public PaymentSvcDwollaImpl(PaymentDao paymentDao, TransformSvc transformSvc, UserTotalsDao userTotalsDao)
 	{
-		this.transformSvc = transformSvc;
-		this.paymentDao = paymentDao;
-		// TODO - Move this into spring config
+	    super(paymentDao, transformSvc, userTotalsDao);
 		this.dwollaClient = new DwollaIntegrationAPI();
-	}
-
-	@Override
-	public void create(Payment p)
-	{
-		paymentDao.create(p);
-	}
-
-	@Override
-	public void update(Payment p)
-	{
-		paymentDao.update(p);
-	}
-	
-
-	@Override
-	public Payment getByPurchaseOrderId(String purchaseOrderId)
-	{
-		return paymentDao.findByPurchaseOrderId(purchaseOrderId);
 	}
 
 	@Override
@@ -79,7 +52,6 @@ public class PaymentSvcDwollaImpl implements PaymentSvc
 				info.setFacilitatorAmount("0");
 			}
 			
-			
 			DwollaTransactionResponse result 
 				= dwollaClient.sendMoneyWithPIN(info);
 
@@ -88,6 +60,8 @@ public class PaymentSvcDwollaImpl implements PaymentSvc
 				payment.setStatus(Status.PROCESSED);
 				payment.setExtSystemId(String.valueOf(result.getBody()));
 				payment.succeed(result.getMessage());
+               // this.updateTotals(payment);
+
 			}
 			else
 			{
@@ -95,8 +69,6 @@ public class PaymentSvcDwollaImpl implements PaymentSvc
 				payment.fail(result.getMessage());
 				//
 			}
-
-			payment.setExtSystem(ExtSystem.DWOLLA);
 		}
 		catch (Exception e)
 		{
@@ -104,20 +76,9 @@ public class PaymentSvcDwollaImpl implements PaymentSvc
 			payment.fail(e.getMessage());
 		}
 		
+		payment.setExtSystem(ExtSystem.DWOLLA);
 		System.out.println("payment="+payment);
 		paymentDao.update(payment);
-	}
-
-	@Override
-	public List<Payment> getAllUnprocessed()
-	{
-		return paymentDao.findByStatus(Status.UNPROCESSED);
-	}
-	
-	@Override
-	public Payment lockForProcessing(String id)
-	{
-		return paymentDao.findAndSetStatusToProcessing(id);
 	}
 
 }

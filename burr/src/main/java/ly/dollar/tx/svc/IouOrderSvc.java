@@ -45,11 +45,36 @@ public class IouOrderSvc {
 		iouOrderDao.updateUserStatus(userId, status, handle);
 	}
 
+	//must update ledger if one exists, otherwise create one - artifact of cold start
 	public void updateAnonPhoneAuthStatus(String phone, String userId,
 			String status, String handle) {
 		iouOrderDao.updateUserByPhone(phone, userId, status, handle);
-	}
+		LedgerTotals lt = userTotalsDao.findByPhone(Long.valueOf(phone));
+		if(lt == null){
+			lt = new LedgerTotals();
+			lt.setPhone(Long.valueOf(phone));
+			lt.setUserId(userId);
+			userTotalsDao.create(lt);
+		}
+		else
+		{
+			lt.setUserId(userId);
+			userTotalsDao.update(lt);
+		}
 
+	}
+	
+	
+	/*
+	 * creating ledger totals below (when not found by phone) assumes there
+	 * exists a userId.
+	 * 
+	 *  in the case of NEW_PHONE, no userId exists
+	 *  
+	 *  thus, updated when user verifies phone 
+	 *  
+	 *  in above method
+	 */
 	public void updateOpenSmsTotals(IouOrder iou) {
 		LedgerTotals payerTotals = userTotalsDao.findByPhone(Long.parseLong(iou
 				.getExtSystemUserName()));

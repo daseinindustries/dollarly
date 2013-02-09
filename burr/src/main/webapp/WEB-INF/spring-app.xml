@@ -20,58 +20,17 @@
 		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
 		<property name="locations">
 			<list>
-				<value>classpath:twitter.properties</value>
-				<value>classpath:twiliop2p.properties</value>
-				<value>classpath:mongo.properties</value>
-				<value>classpath:jefferson.properties</value>
+				<value>classpath:twilioSTG.properties</value>
+				<value>classpath:mongoSTG.properties</value>
+				<value>classpath:jeffersonSTG.properties</value>
 			</list>
 		</property>
 	</bean> 
-	
-	<bean id="connectionFactoryLocator"
-		class="org.springframework.social.connect.support.ConnectionFactoryRegistry">
-		<property name="connectionFactories">
-			<list>
-				<bean class="org.springframework.social.twitter.connect.TwitterConnectionFactory">
-					<constructor-arg value="${twitter.consumerKey}" />
-					<constructor-arg value="${twitter.consumerSecret}" />
-				</bean>
-			</list>
-		</property>
-	</bean>
 
     <bean id="configSvc" class="ly.dollar.config.ConfigSvcMongoImpl">
         <constructor-arg ref="mongoTemplate" />
     </bean>
-    <!-- Daemons -->
-    <!-- init-method="start" destroy-method="stop" 
-	<bean id="twitterPoller" 
-		class="ly.dollar.tx.daemon.TwitterPoller" 
-	 init-method="start" destroy-method="stop" >
-		
-		<constructor-arg>
-			<bean class="org.springframework.social.twitter.api.impl.TwitterTemplate">
-				<constructor-arg value="${twitter.consumerKey}" />
-				<constructor-arg value="${twitter.consumerSecret}" />
-				<constructor-arg value="${twitter.accessToken}" />
-				<constructor-arg value="${twitter.accessTokenSecret}" />
-			</bean>
-		</constructor-arg>
-		<constructor-arg value="${twitter.pollIntervalMillis}" />
-		<constructor-arg value="${twitter.timelineUrl}" />
-		<constructor-arg ref="tweetActor" />
-		<constructor-arg ref="configSvc" />
-	</bean> 
-	       
-	<bean id="tweetActor" 
-        class="ly.dollar.tx.daemon.TweetActor">
-        <constructor-arg ref="iouOrderSvc" />
-        <constructor-arg value="${jefferson.twitterUserUrl}" />
-        <constructor-arg value="${jefferson.twitterListingUrl}" />
-        <constructor-arg ref="userOnboardSvc" />
-        <constructor-arg ref="confirmationSvc" />
-    </bean> 
-	-->
+
 	<bean id="smsProcessor" 
 		class="ly.dollar.tx.daemon.SmsProcessor"
 		init-method="start" destroy-method="stop">
@@ -85,13 +44,28 @@
         class="ly.dollar.tx.daemon.SmsActor">
         <constructor-arg ref="iouOrderSvc" />
         <constructor-arg value="${jefferson.smsUserUrl}" />
-        <constructor-arg value="${jefferson.twitterUserUrl}" />
+        <constructor-arg value="${jefferson.fbUserUrl}" />
         <constructor-arg value="${jefferson.twitterListingUrl}" />
         <constructor-arg ref="smsSvc" />
         <constructor-arg ref="userOnboardSvc" />
         <constructor-arg ref="confirmationSvc" />
      </bean>
-  
+     <!--  
+     <bean id="reminderProcessor" 
+		class="ly.dollar.tx.daemon.ReminderProcessor"
+		init-method="start" destroy-method="stop">
+		<constructor-arg ref="reminderSvc" />
+		<constructor-arg ref="iouReminderActor" />
+	</bean> 
+	
+	<bean id="iouReminderActor" 
+        class="ly.dollar.tx.daemon.IouReminderActor">
+        <constructor-arg ref="iouOrderSvc" />
+        <constructor-arg ref="confirmationSvc" />
+        <constructor-arg ref="reminderSvc" />
+        <constructor-arg ref="configSvc" />
+     </bean>
+  -->
     <bean id="paymentProcessor" 
         class="ly.dollar.tx.daemon.PaymentProcessor"
         init-method="start" destroy-method="stop">
@@ -139,6 +113,8 @@
 		<constructor-arg value="${twilio.statusCallbackUrl}" />
 		<constructor-arg ref="confirmationDao" />
 		<constructor-arg ref="userMessageDao" />
+		<constructor-arg ref="userTotalsDao" />
+		<constructor-arg ref="reminderSvc" />
     </bean>
       <bean id="phoneConfirmationSvc" class="ly.dollar.tx.svc.PhoneConfirmationSvc">
 		<constructor-arg value="${twilio.accountSid}" />
@@ -148,17 +124,29 @@
 		<constructor-arg ref="phoneConfirmationDao" />
 		<constructor-arg ref="userMessageDao" />
     </bean>
-	<bean id="paymentSvc" class="ly.dollar.tx.svc.PaymentSvcDwollaImpl">
+    
+  	<bean id="paymentSvc" class="ly.dollar.tx.svc.PaymentSvcPaypalImpl">
         <constructor-arg ref="paymentDao" />
      	<constructor-arg ref="transformSvc" />
+     	<constructor-arg ref="userTotalsDao" />
+     	<constructor-arg ref="transformSvcImpl" />
+     	<constructor-arg value="paypal.properties" />
+	</bean>
+    <!--  
+	<bean id="dwollaPaymentSvc" class="ly.dollar.tx.svc.PaymentSvcDwollaImpl">
+        <constructor-arg ref="paymentDao" />
+     	<constructor-arg ref="transformSvc" />
+     	<constructor-arg ref="userTotalsDao" />
+     	
 
     </bean>
-    
+    -->
     <bean id="userOnboardSvc" class="ly.dollar.tx.svc.UserOnboardSvcImpl">
     	<constructor-arg value="${twilio.accountSid}" />
 		<constructor-arg value="${twilio.authToken}" />
 		<constructor-arg value="${twilio.fromPhone}" />
 		<constructor-arg ref="userMessageDao" />
+		<constructor-arg ref="userTotalsDao" />
 		<property name="iouOrderSvc" ref="iouOrderSvc"/>
     </bean> 
     
@@ -169,6 +157,11 @@
     
     <bean id="transformSvc" class="ly.dollar.tx.svc.TransformSvc">
     </bean>
+    <bean id="transformSvcImpl" class="ly.dollar.tx.svc.TransformSvcImpl">
+	</bean>
+     <bean id="reminderSvc" class="ly.dollar.tx.svc.ReminderSvc">
+        <constructor-arg ref="reminderDao" />
+    </bean>
   
     
     <bean id="smsSvc" class="ly.dollar.tx.svc.SmsSvc">
@@ -176,6 +169,10 @@
     </bean>
     
 	<!-- Dao -->
+	
+	<bean id="reminderDao" class="ly.dollar.tx.dao.ReminderDao">
+        <constructor-arg ref="mongoTemplate" />
+    </bean>
  	<bean id="userTotalsDao" class="ly.dollar.tx.dao.UserTotalsDao">
         <constructor-arg ref="mongoTemplate" />
     </bean>
@@ -197,12 +194,52 @@
     <bean id="smsDao" class="ly.dollar.tx.dao.SmsDao">
         <constructor-arg ref="mongoTemplate" />
     </bean>
-    
+ 
 
- 	<mongo:db-factory id="mongoDbFactory" dbname="burr" host="127.6.222.129" port="27017" username="admin" password="vBVWL7GSqc4r"/>
+ 	<mongo:db-factory id="mongoDbFactory" dbname="aaron" host="127.2.123.129" port="27017" username="admin" password="gwAGdbVgV5CY"/>
     <bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
         <constructor-arg ref="mongoDbFactory" />
     </bean>
-	
+	    <!-- Daemons -->
+    
+    <!-- init-method="start" destroy-method="stop" 
+    	<bean id="connectionFactoryLocator"
+		class="org.springframework.social.connect.support.ConnectionFactoryRegistry">
+		<property name="connectionFactories">
+			<list>
+				<bean class="org.springframework.social.twitter.connect.TwitterConnectionFactory">
+					<constructor-arg value="${twitter.consumerKey}" />
+					<constructor-arg value="${twitter.consumerSecret}" />
+				</bean>
+			</list>
+		</property>
+	</bean>
+	<bean id="twitterPoller" 
+		class="ly.dollar.tx.daemon.TwitterPoller" 
+	 init-method="start" destroy-method="stop" >
+		
+		<constructor-arg>
+			<bean class="org.springframework.social.twitter.api.impl.TwitterTemplate">
+				<constructor-arg value="${twitter.consumerKey}" />
+				<constructor-arg value="${twitter.consumerSecret}" />
+				<constructor-arg value="${twitter.accessToken}" />
+				<constructor-arg value="${twitter.accessTokenSecret}" />
+			</bean>
+		</constructor-arg>
+		<constructor-arg value="${twitter.pollIntervalMillis}" />
+		<constructor-arg value="${twitter.timelineUrl}" />
+		<constructor-arg ref="tweetActor" />
+		<constructor-arg ref="configSvc" />
+	</bean> 
+	       
+	<bean id="tweetActor" 
+        class="ly.dollar.tx.daemon.TweetActor">
+        <constructor-arg ref="iouOrderSvc" />
+        <constructor-arg value="${jefferson.twitterUserUrl}" />
+        <constructor-arg value="${jefferson.twitterListingUrl}" />
+        <constructor-arg ref="userOnboardSvc" />
+        <constructor-arg ref="confirmationSvc" />
+    </bean> 
+	-->
 
 </beans>
