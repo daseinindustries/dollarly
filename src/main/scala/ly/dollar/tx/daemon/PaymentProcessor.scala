@@ -47,7 +47,7 @@ class PaymentProcessor(iouOrderSvc: IouOrderSvc, paySvc: PaymentSvc,
   }
   // TODO - make adjustments for twitter vs sms ??
   private def processOne(payment: Payment) {
-    System.out.println("PROCESSING PAYMENT: " + payment.getId());
+    System.out.println(payment.toString)
     val po = iouOrderSvc.getById(payment.getPurchaseOrderId)
     val payee = HttpClient.get[User](userUrl + payment.getPayeeUserId).get
     val payer = HttpClient.get[User](userUrl + payment.getPayerUserId).get
@@ -57,6 +57,11 @@ class PaymentProcessor(iouOrderSvc: IouOrderSvc, paySvc: PaymentSvc,
       val lockedPayment = paySvc.lockForProcessing(payment.getId)
       if (lockedPayment != null) {
 
+        if(!paySvc.isWithinSpendingLimits(lockedPayment)) {
+          spendingLimitFail(payer, lockedPayment)
+          return
+        }
+        
         paySvc.execute(lockedPayment, payer, payee)
         if (lockedPayment.getStatus == Status.PROCESSED) {
           po.succeed()
@@ -71,8 +76,7 @@ class PaymentProcessor(iouOrderSvc: IouOrderSvc, paySvc: PaymentSvc,
           if (lockedPayment.getExtSystem().equals(ExtSystem.DWOLLA)) {
             if (lockedPayment.getExtSystemNotes().contains("Invalid account PIN")) {
               msgSvc.createAndSendInvalidDwollaPin(payer.getPhone(), po)
-            } else if (lockedPayment.getExtSystemNotes().contains(
-              "Insufficient funds")) {
+            } else if (lockedPayment.getExtSystemNotes().contains("Insufficient funds")) {
               msgSvc.createAndSendInsufficientFundsDwolla(payer.getPhone(), po)
             } else {
               msgSvc.createAndSendDwollaOther(payer.getPhone(), po)
@@ -102,12 +106,19 @@ class PaymentProcessor(iouOrderSvc: IouOrderSvc, paySvc: PaymentSvc,
   }
 
   private def fail(payer: User, payment: Payment, purchaseOrder: IouOrder, reason: FailReason) {
-    //invSvc.add(purchaseOrder.getListingId, purchaseOrder.getNumUnits)
     purchaseOrder.fail(reason)
     iouOrderSvc.update(purchaseOrder)
     msgSvc.sendSms(payer.getPhone,
       "Please go to the Dollar.ly website to correct a " +
         "problem with your payment details.")
   }
-
+  
+  private def spendingLimitFail(payer: User, payment: Payment) {
+    payment.fail("Spending limit would be exceeded by this payment at this time.")
+    paySvc.update(payment)
+    msgSvc.sendSms(payer.getPhone,
+      "This payment would cause you to exceed your per-week spending limit. " +
+        "See your ledger for more details.")
+  }
+  
 }

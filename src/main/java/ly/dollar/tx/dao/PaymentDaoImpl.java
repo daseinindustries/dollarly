@@ -71,11 +71,12 @@ public class PaymentDaoImpl implements PaymentDao
 		p.setStatus(Status.PROCESSING);
 		return p;
 	}
+	
 	//payment index
 	private void ensureIndexes()
 	{
 		IndexOperations ops = mongo.indexOps(Payment.class);
-		Index purchaseOrderIndex = new Index().on("purchaseOrderId", Order.ASCENDING).unique();
+		Index purchaseOrderIndex = new Index().on("purchaseOrderId", Order.ASCENDING);
 		ops.ensureIndex(purchaseOrderIndex);
 		Index statusIndex = new Index().on("status", Order.ASCENDING);
 		ops.ensureIndex(statusIndex);
