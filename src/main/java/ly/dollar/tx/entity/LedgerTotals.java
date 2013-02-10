@@ -23,7 +23,7 @@ public class LedgerTotals implements Serializable{
 	private BigDecimal openPays = new BigDecimal(0);
 	private BigDecimal pastCollects = new BigDecimal(0);
 	private BigDecimal pastPays = new BigDecimal(0);
-	
+	private BigDecimal paysThisWeek;
 	
 	public String getId() {
 		return id;
@@ -67,6 +67,12 @@ public class LedgerTotals implements Serializable{
 	}
 	public void setPastPays(BigDecimal pastPays) {
 		this.pastPays = pastPays;
+	}
+	public BigDecimal getPaysThisWeek() {
+		return paysThisWeek;
+	}
+	public void setPaysThisWeek(BigDecimal paysThisWeek) {
+		this.paysThisWeek = paysThisWeek;
 	}
 	@Override
 	public String toString()

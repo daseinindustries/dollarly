@@ -61,7 +61,7 @@ public class ConfirmationDao {
 	{
 		Query q = new Query(where("code").is(code)
 				 .and("phone").is(phone)
-				 .and("status").nin(Status.REPLIED, 
+				 .and("status").nin(//Status.REPLIED, 
 								    Status.UNDELIVERABLE,
 							        Status.EXPIRED,
 							        Status.VOID));

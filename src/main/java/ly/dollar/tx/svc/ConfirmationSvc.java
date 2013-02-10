@@ -249,6 +249,18 @@ public class ConfirmationSvc {
 			error = "unknown";
 		this.sendSms(phone, error);
 	}
+	
+	public void createAndSendPayPalLimits(Long phone, IouOrder i)
+	{
+		UserMessage m = userMessageDao.findByType("PAYPAL_LIMITS_REACHED");
+		String ms = m.getMessageBody();
+		String amount = ms.replaceFirst("@amount", i.getAmount()
+				.toPlainString());
+		String payee = amount.replaceAll("@payee", i.getPayeeHandle());
+		String hashtag = payee.replaceAll("@hashtag", i.getHashtag());
+		String end = hashtag.replaceAll("@payer", i.getPayerHandle());
+		this.sendSms(phone, end);
+	}
 
 	public MessageDetails sendSms(Long phone, String body) {
 		Map<String, String> params = baseSmsParams(phone, body);

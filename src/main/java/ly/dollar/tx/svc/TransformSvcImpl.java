@@ -6,7 +6,8 @@ public class TransformSvcImpl {
 
 	private StandardPBEStringEncryptor ste;
 	private static final String pass = "blargh8bbbblarg";
-
+	
+	
 	public TransformSvcImpl() {
 		ste = new StandardPBEStringEncryptor();
 		ste.setAlgorithm("PBEWithMD5AndTripleDES");
@@ -21,6 +22,18 @@ public class TransformSvcImpl {
 	public String resolve(String digest) {
 		String ingest = ste.decrypt(digest);
 		return ingest;
+	}
+	
+	public String transformMessage(String message) {
+		if (message == null) {
+			return null;
+		} else {
+			if(message.length() == 4){
+				return message;
+			} else {
+			return this.ste.decrypt(message);
+			}
+		}
 	}
 	
 }

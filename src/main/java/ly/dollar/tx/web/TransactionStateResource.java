@@ -24,7 +24,6 @@ public class TransactionStateResource {
 	private IouOrderSvc iouOrderSvc;
 	private ConfirmationSvc confirmationSvc;
 
-	// time to make nice
 
 	@PUT
 	@Path("iou/{iouId}")
