@@ -23,4 +23,6 @@ public interface PaymentSvc
 	Payment getByPurchaseOrderId(String purchaseOrderId);
 
 	List<Payment> getAllUnprocessed();
+	
+	boolean isWithinSpendingLimits(Payment payment);
 }

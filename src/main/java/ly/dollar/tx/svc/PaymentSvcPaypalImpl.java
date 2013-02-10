@@ -3,15 +3,18 @@ package ly.dollar.tx.svc;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import ly.dollar.tx.dao.PaymentDao;
 import ly.dollar.tx.dao.UserTotalsDao;
 import ly.dollar.tx.entity.ExtSystem;
 import ly.dollar.tx.entity.Payment;
-import ly.dollar.tx.entity.User;
 import ly.dollar.tx.entity.Payment.Status;
+import ly.dollar.tx.entity.User;
 import ly.dollar.tx.entity.UserPlatform.UserPayPlatform;
 
 import com.paypal.svcs.services.AdaptivePaymentsService;
@@ -25,13 +28,15 @@ import com.paypal.svcs.types.common.RequestEnvelope;
 
 public class PaymentSvcPaypalImpl extends PaymentSvcImpl
 {
-
+    private static final BigDecimal WEEKLY_SPENDING_LIMIT = new BigDecimal("250");
+    
     private AdaptivePaymentsService paypalClient;
     private TransformSvcImpl transformSvcImpl;
+    private IouOrderSvc iouOrderSvc;
 
-    
-    public PaymentSvcPaypalImpl(PaymentDao paymentDao, TransformSvc transformSvc, UserTotalsDao userTotalsDao, 
-            TransformSvcImpl transformSvcImpl, String propsFile) throws IOException
+    public PaymentSvcPaypalImpl(TransformSvc transformSvc, TransformSvcImpl transformSvcImpl, 
+            IouOrderSvc iouOrderSvc, PaymentDao paymentDao,  UserTotalsDao userTotalsDao, 
+            String propsFile) throws IOException
     {
         super(paymentDao, transformSvc, userTotalsDao);
         InputStream in = this.getClass().getClassLoader().getResourceAsStream(propsFile);
@@ -55,7 +60,6 @@ public class PaymentSvcPaypalImpl extends PaymentSvcImpl
         payRequest.setTrackingId(payment.getId());
         payRequest.setReceiverList(makeReceiver(payeeInfo, payment));
         payRequest.setSenderEmail(payerInfo.getEmail());
-        //payRequest.setPreapprovalKey(payerInfo.getPreapprovalKey());
         payRequest.setPreapprovalKey(transformSvcImpl.resolve(payerInfo.getPreapprovalKey()));
 
         try
@@ -138,5 +142,19 @@ public class PaymentSvcPaypalImpl extends PaymentSvcImpl
         }
     }
 
+    @Override
+    public boolean isWithinSpendingLimits(Payment payment)
+    {
+        BigDecimal total = iouOrderSvc.getPastPayTotalSince(payment.getPayeeUserId(), sevenDaysAgo());
+        total = total.add(payment.getAmount());
+        return total.compareTo(WEEKLY_SPENDING_LIMIT) < 0;
+    }
+    
+    public static Date sevenDaysAgo()
+    {
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DATE, -7);
+        return cal.getTime();
+    }
 
 }

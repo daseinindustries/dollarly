@@ -74,7 +74,6 @@ public abstract class PaymentSvcImpl implements PaymentSvc
     	BigDecimal collUpdate = collected.add(am);
     	payeeTotals.setPastCollects(collUpdate);
     	userTotalsDao.update(payeeTotals);
-       
 
     	LedgerTotals payerTotals = userTotalsDao.findByUserId(p.getPayerUserId());
     	
@@ -85,7 +84,12 @@ public abstract class PaymentSvcImpl implements PaymentSvc
     	BigDecimal payUpdate = payed.add(am);
     	payerTotals.setPastPays(payUpdate);
     	userTotalsDao.update(payerTotals);
-    	
+    }
+    
+    @Override
+    public boolean isWithinSpendingLimits(Payment payment)
+    {
+        return true;
     }
 
 }

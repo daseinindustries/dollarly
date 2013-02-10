@@ -3,13 +3,10 @@ package ly.dollar.tx.dao;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
-
 import ly.dollar.tx.entity.IouOrder;
-
-
-
 
 import org.springframework.data.mongodb.core.IndexOperations;
 import org.springframework.data.mongodb.core.MongoOperations;
@@ -32,10 +29,8 @@ public class IouOrderDao {
 		ensureIndexes();
 	}
 	
-	public IouOrder createAndReturn(IouOrder i){
-		//later
-	
-	return null;
+	public IouOrder createAndReturn(IouOrder i) {
+		throw new RuntimeException("Method unimplemented.");
 	}
 	
 	public void create(IouOrder p)
@@ -43,7 +38,6 @@ public class IouOrderDao {
 		mongo.insert(p);
 	}
 	
-
 	public void update(IouOrder p)
 	{
 		mongo.save(p);
@@ -77,17 +71,15 @@ public class IouOrderDao {
 			update(i);
 			System.out.println("collects: " +i.toString());
 		}
-		
-		
 	}
-	public void updateUserStatus(String userId, String status, String handle) {
-
+	
+	public void updateUserStatus(String userId, String status, String handle) 
+	{
 		Query q = new Query();
 		q.addCriteria(where("payerUserId").is(userId));
 		q.addCriteria(where("status").is(IouOrder.Status.OPEN));
 		Collection<IouOrder> pays = mongo.find(q, IouOrder.class);
 
-		
 		for (IouOrder i : pays){
 			i.setPayerFundingStatus(status);
 			i.setPayerHandle(handle);
@@ -99,7 +91,6 @@ public class IouOrderDao {
 		e.addCriteria(where("payeeUserId").is(userId));
 		e.addCriteria(where("status").is(IouOrder.Status.OPEN));
 		Collection<IouOrder> collects = mongo.find(e, IouOrder.class);
-		  
 		
 		for (IouOrder i : collects){
 			i.setPayeeFundingStatus(status);
@@ -146,6 +137,7 @@ public class IouOrderDao {
 			    	IouOrder.class
 			   );
 	}
+	
 	public IouOrder findByExternalSystemIdAndName(String id, String externalSystem)
 	{
 		return mongo.findOne ( 
@@ -172,10 +164,7 @@ public class IouOrderDao {
 				new Query(where("payerUserId").is(id)),
 		    	IouOrder.class
 		   );
-		
 	}
-	
-	
 
 	public Collection<IouOrder> findByPayerUserId(String payerUserId)
 	{
@@ -184,6 +173,14 @@ public class IouOrderDao {
 			    	IouOrder.class
 			   );
 	}
+	
+	public Collection<IouOrder> findByPayeeUserIdAndCreateDate(String payeeUserId, Date onOrAfter)
+    {
+	    return mongo.find ( 
+                new Query(where("payeeUserId").is(payeeUserId).and("createdOn").gte(onOrAfter)),
+                IouOrder.class
+           );
+    }
 	
 	public List<IouOrder> findOpenIousByUserId(String userId, String payParty){
 		if (payParty.equals("payee"))
