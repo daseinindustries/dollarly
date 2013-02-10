@@ -42,6 +42,7 @@ public class PaymentSvcPaypalImpl extends PaymentSvcImpl
         InputStream in = this.getClass().getClassLoader().getResourceAsStream(propsFile);
         paypalClient = new AdaptivePaymentsService(in);
         this.transformSvcImpl = transformSvcImpl;
+        this.iouOrderSvc = iouOrderSvc;
     }
 
     @Override
