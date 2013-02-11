@@ -146,7 +146,7 @@ public class PaymentSvcPaypalImpl extends PaymentSvcImpl
     @Override
     public boolean isWithinSpendingLimits(Payment payment)
     {
-        BigDecimal total = iouOrderSvc.getPastPayTotalSince(payment.getPayeeUserId(), sevenDaysAgo());
+        BigDecimal total = iouOrderSvc.getPayerPastPayTotalSince(payment.getPayerUserId(), sevenDaysAgo());
         total = total.add(payment.getAmount());
         return total.compareTo(WEEKLY_SPENDING_LIMIT) < 0;
     }

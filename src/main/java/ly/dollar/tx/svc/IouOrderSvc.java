@@ -1,6 +1,7 @@
 package ly.dollar.tx.svc;
 
 import java.math.BigDecimal;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 
@@ -139,7 +140,9 @@ public class IouOrderSvc
 
     public LedgerTotals getOpenLedgerTotalsById(String userId)
     {
-        return userTotalsDao.findByUserId(userId);
+    	LedgerTotals l = userTotalsDao.findByUserId(userId);
+    	l.setPaysThisWeek(this.getPayerPastPayTotalSince(userId, sevenDaysAgo()));
+    	return l;
     }
 
     public BigDecimal getOpenIouTotalByUserId(String uid, String payParty)
@@ -164,6 +167,13 @@ public class IouOrderSvc
         {
             return BigDecimal.ZERO;
         }
+    }
+    
+    public BigDecimal getPayerPastPayTotalSince(String userId, Date onOrAfter)
+    {
+        return sumPaid (
+            iouOrderDao.findByPayerUserIdAndCreateDate(userId, onOrAfter)
+        );
     }
     
     public BigDecimal getPastPayTotalSince(String userId, Date onOrAfter)
@@ -222,5 +232,10 @@ public class IouOrderSvc
         }
         return total;
     }
-
+    public static Date sevenDaysAgo()
+    {
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DATE, -7);
+        return cal.getTime();
+    }
 }

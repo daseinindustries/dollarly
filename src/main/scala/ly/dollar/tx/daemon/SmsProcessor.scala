@@ -4,7 +4,7 @@ import scala.actors.Futures._
 import scala.collection.JavaConverters._
 
 import java.lang.{ Long => JavaLong }
-
+import java.math.BigDecimal
 import org.springframework.social.twitter.api.Tweet
 import org.springframework.social.twitter.api.Twitter
 
@@ -18,7 +18,7 @@ class SmsProcessor(actor: SmsActor, smsSvc: SmsSvc, configSvc: ConfigSvc) {
 
   private var status = AppStatus.RUNNING
   private val throttle = new Throttle(2000L)
-
+  
   def start() { actor.start; future { process } }
 
   def stop() { status = AppStatus.STOPPING; while (status != AppStatus.STOPPED) {} }
@@ -46,6 +46,8 @@ class SmsProcessor(actor: SmsActor, smsSvc: SmsSvc, configSvc: ConfigSvc) {
 
 class SmsActor(iouOrderSvc: IouOrderSvc, userUrl: String, userNameUrl: String, listingUrl: String,
   smsSvc: SmsSvc, userOnboardSvc: UserOnboardSvc, confirmationSvc: ConfirmationSvc) extends Actor {
+  
+
 
   def act {
     loop {
@@ -53,7 +55,7 @@ class SmsActor(iouOrderSvc: IouOrderSvc, userUrl: String, userNameUrl: String, l
         case sms: Sms =>
           parse(sms) match {
             case Some(tx) =>
-
+            	val limit = new BigDecimal("25.00").setScale(2)
               val iou = new IouOrder(tx)
               var payerPhone: JavaLong = new JavaLong(sms.getSenderPhone());
 
@@ -61,6 +63,10 @@ class SmsActor(iouOrderSvc: IouOrderSvc, userUrl: String, userNameUrl: String, l
               {
                 confirmationSvc.createAndSendNegativeAmountNotAllowedMessage(payerPhone, tx)
               } 
+              else if (tx.getAmount().compareTo(limit) == 1)
+              {
+                confirmationSvc.createAndSendLimitNotAllowed(payerPhone, tx);
+              }
               else 
               {
 

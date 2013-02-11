@@ -174,6 +174,15 @@ public class IouOrderDao {
 			   );
 	}
 	
+
+	public Collection<IouOrder> findByPayerUserIdAndCreateDate(String payerUserId, Date onOrAfter)
+    {
+	    return mongo.find ( 
+                new Query(where("payerUserId").is(payerUserId).and("createdOn").gte(onOrAfter)),
+                IouOrder.class
+           );
+    }
+	
 	public Collection<IouOrder> findByPayeeUserIdAndCreateDate(String payeeUserId, Date onOrAfter)
     {
 	    return mongo.find ( 

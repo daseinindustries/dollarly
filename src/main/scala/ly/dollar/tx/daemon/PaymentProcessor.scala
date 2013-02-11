@@ -58,7 +58,7 @@ class PaymentProcessor(iouOrderSvc: IouOrderSvc, paySvc: PaymentSvc,
       if (lockedPayment != null) {
 
         if(!paySvc.isWithinSpendingLimits(lockedPayment)) {
-          spendingLimitFail(payer, lockedPayment)
+          spendingLimitFail(payer, lockedPayment, po)
           return
         }
         
@@ -113,12 +113,16 @@ class PaymentProcessor(iouOrderSvc: IouOrderSvc, paySvc: PaymentSvc,
         "problem with your payment details.")
   }
   
-  private def spendingLimitFail(payer: User, payment: Payment) {
+  private def spendingLimitFail(payer: User, payment: Payment, po: IouOrder) {
     payment.fail("Spending limit would be exceeded by this payment at this time.")
     paySvc.update(payment)
+    msgSvc.createAndSendPayPalLimits(payer.getPhone(), po)
+    /*
     msgSvc.sendSms(payer.getPhone,
       "This payment would cause you to exceed your per-week spending limit. " +
         "See your ledger for more details.")
+        
+        */
   }
   
 }

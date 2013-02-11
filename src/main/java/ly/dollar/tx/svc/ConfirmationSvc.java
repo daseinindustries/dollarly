@@ -124,6 +124,18 @@ public class ConfirmationSvc {
 		this.sendSms(phone, hashtag);
 
 	}
+	
+	public void createAndSendLimitNotAllowed(Long phone, TransactionIntent tx){
+		UserMessage m = userMessageDao.findByType("TX_LIMIT_NOT_ALLOWED");
+		String ms = m.getMessageBody();
+		String amount = ms.replaceFirst("@amount", tx.getAmount()
+				.toPlainString());
+		String payee = amount.replaceAll("@payee", tx.getMention());
+		String hashtag = payee.replaceAll("@hashtag", tx.getHashtag());
+
+		this.sendSms(phone, hashtag);
+
+	}
 
 	public void createAndSendPayeeLedgerMessage(IouOrder iou) {
 		UserMessage m = userMessageDao.findByType("PAYEE_NEW_COLLECTABLE_IOU");
