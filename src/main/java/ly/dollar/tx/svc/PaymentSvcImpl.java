@@ -1,6 +1,8 @@
 package ly.dollar.tx.svc;
 
 import java.math.BigDecimal;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import ly.dollar.tx.dao.PaymentDao;
@@ -12,11 +14,9 @@ import ly.dollar.tx.entity.User;
 
 public abstract class PaymentSvcImpl implements PaymentSvc
 {
-
     protected final PaymentDao paymentDao;
     protected final TransformSvc transformSvc;
     protected final UserTotalsDao userTotalsDao;
-
 
     public PaymentSvcImpl(PaymentDao paymentDao, TransformSvc transformSvc,
     		UserTotalsDao userTotalsDao)
@@ -60,36 +60,42 @@ public abstract class PaymentSvcImpl implements PaymentSvc
     }
     
     @Override
-    public void updateTotals(Payment p){
-    
-    	BigDecimal am = p.getAmount().setScale(2, BigDecimal.ROUND_HALF_UP);
-    	
-    	System.out.println("updating past totals: " + am);
-    	
-    	LedgerTotals payeeTotals = userTotalsDao.findByUserId(p.getPayeeUserId());
-    	if(payeeTotals == null){
-    		payeeTotals = new LedgerTotals();
-    	}
-    	BigDecimal collected = payeeTotals.getPastCollects().setScale(2, BigDecimal.ROUND_HALF_UP);
-    	BigDecimal collUpdate = collected.add(am);
-    	payeeTotals.setPastCollects(collUpdate);
-    	userTotalsDao.update(payeeTotals);
+    public void updateTotals(Payment p)
+    {
+        BigDecimal am = p.getAmount().setScale(2, BigDecimal.ROUND_HALF_UP);
 
-    	LedgerTotals payerTotals = userTotalsDao.findByUserId(p.getPayerUserId());
-    	
-    	if(payerTotals == null){
-    		payerTotals = new LedgerTotals();
-    	}
-    	BigDecimal payed = payerTotals.getPastPays().setScale(2, BigDecimal.ROUND_HALF_UP);
-    	BigDecimal payUpdate = payed.add(am);
-    	payerTotals.setPastPays(payUpdate);
-    	userTotalsDao.update(payerTotals);
+        LedgerTotals payeeTotals = userTotalsDao.findByUserId(p.getPayeeUserId());
+        if (payeeTotals == null)
+        {
+            payeeTotals = new LedgerTotals();
+        }
+        BigDecimal collected = payeeTotals.getPastCollects().setScale(2, BigDecimal.ROUND_HALF_UP);
+        BigDecimal collUpdate = collected.add(am);
+        payeeTotals.setPastCollects(collUpdate);
+        userTotalsDao.update(payeeTotals);
+
+        LedgerTotals payerTotals = userTotalsDao.findByUserId(p.getPayerUserId());
+        if (payerTotals == null)
+        {
+            payerTotals = new LedgerTotals();
+        }
+        BigDecimal payed = payerTotals.getPastPays().setScale(2, BigDecimal.ROUND_HALF_UP);
+        BigDecimal payUpdate = payed.add(am);
+        payerTotals.setPastPays(payUpdate);
+        userTotalsDao.update(payerTotals);
     }
-    
+
     @Override
     public boolean isWithinSpendingLimits(Payment payment)
     {
         return true;
+    }
+    
+    protected Date windowStartDate()
+    {
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DATE, -SPENDING_LIMIT_WINDOW_DAYS);
+        return cal.getTime();
     }
 
 }

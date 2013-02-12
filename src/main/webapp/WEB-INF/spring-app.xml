@@ -97,6 +97,10 @@
 		<property name="smsSvc" ref="smsSvc"/>
     </bean>
 
+	<bean id="userSpendingLimitResource" class="ly.dollar.tx.web.UserSpendingLimitResource">
+		<property name="iouOrderSvc" ref="iouOrderSvc"/>
+    </bean>
+
 	<!-- Svc -->
     
     <bean id="confirmationSvc" class="ly.dollar.tx.svc.ConfirmationSvc">

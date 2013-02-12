@@ -5,8 +5,6 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 import ly.dollar.tx.dao.PaymentDao;
@@ -28,8 +26,6 @@ import com.paypal.svcs.types.common.RequestEnvelope;
 
 public class PaymentSvcPaypalImpl extends PaymentSvcImpl
 {
-    private static final BigDecimal WEEKLY_SPENDING_LIMIT = new BigDecimal("250");
-    
     private AdaptivePaymentsService paypalClient;
     private TransformSvcImpl transformSvcImpl;
     private IouOrderSvc iouOrderSvc;
@@ -142,20 +138,13 @@ public class PaymentSvcPaypalImpl extends PaymentSvcImpl
             System.err.println("\tNone. " + e.getMessage());
         }
     }
-
+    
     @Override
     public boolean isWithinSpendingLimits(Payment payment)
     {
-        BigDecimal total = iouOrderSvc.getPayerPastPayTotalSince(payment.getPayerUserId(), sevenDaysAgo());
+        BigDecimal total = iouOrderSvc.getPayerPastPayTotalSince(payment.getPayerUserId(), windowStartDate());
         total = total.add(payment.getAmount());
-        return total.compareTo(WEEKLY_SPENDING_LIMIT) < 0;
-    }
-    
-    public static Date sevenDaysAgo()
-    {
-        Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.DATE, -7);
-        return cal.getTime();
+        return total.compareTo(SPENDING_LIMIT_AMOUNT) < 0;
     }
 
 }

@@ -173,22 +173,25 @@ public class IouOrderDao {
 			    	IouOrder.class
 			   );
 	}
-	
 
+	/**
+	 * Returned in sorted order ascending by createdOn date
+	 */
 	public Collection<IouOrder> findByPayerUserIdAndCreateDate(String payerUserId, Date onOrAfter)
     {
-	    return mongo.find ( 
-                new Query(where("payerUserId").is(payerUserId).and("createdOn").gte(onOrAfter)),
-                IouOrder.class
-           );
+	    Query q = new Query(where("payerUserId").is(payerUserId).and("createdOn").gte(onOrAfter));
+        q.sort().on("createdOn", Order.ASCENDING);
+        return mongo.find (q, IouOrder.class);    
     }
 	
-	public Collection<IouOrder> findByPayeeUserIdAndCreateDate(String payeeUserId, Date onOrAfter)
+	/**
+     * Returned in sorted order ascending by createdOn date
+     */
+    public Collection<IouOrder> findByPayeeUserIdAndCreateDate(String payeeUserId, Date onOrAfter)
     {
-	    return mongo.find ( 
-                new Query(where("payeeUserId").is(payeeUserId).and("createdOn").gte(onOrAfter)),
-                IouOrder.class
-           );
+	    Query q = new Query(where("payeeUserId").is(payeeUserId).and("createdOn").gte(onOrAfter));
+	    q.sort().on("createdOn", Order.ASCENDING);
+	    return mongo.find (q, IouOrder.class);
     }
 	
 	public List<IouOrder> findOpenIousByUserId(String userId, String payParty){
@@ -226,7 +229,6 @@ public class IouOrderDao {
 		}
 		
 	}
-	
 	
 	public IouOrder updateStatusToConfirm(String id) {
 		Query q = new Query();

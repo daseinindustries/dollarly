@@ -176,11 +176,9 @@ public class IouOrderSvc
         );
     }
     
-    public BigDecimal getPastPayTotalSince(String userId, Date onOrAfter)
+    public Collection<IouOrder> getPayerIousSince(String userId, Date onOrAfter)
     {
-        return sumPaid (
-            iouOrderDao.findByPayeeUserIdAndCreateDate(userId, onOrAfter)
-        );
+        return iouOrderDao.findByPayerUserIdAndCreateDate(userId, onOrAfter);
     }
 
     public IouOrder getById(String id)
