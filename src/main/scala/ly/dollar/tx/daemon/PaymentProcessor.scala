@@ -127,7 +127,8 @@ class PaymentProcessor(iouOrderSvc: IouOrderSvc, paySvc: PaymentSvc,
   private def txAmountFail(payer: User, payment: Payment, po: IouOrder) {
     payment.fail("Maximum transaction amount exceeded by this payment.")
     paySvc.update(payment)
-    msgSvc.sendSms(payer.getPhone, "Maximum transaction amount exceeded by this payment.")
+   // msgSvc.sendSms(payer.getPhone, "Maximum transaction amount exceeded by this payment.")
+    msgSvc.createAndSendLimitNotAllowed(payer.getPhone(), po)
   }
   
 }
