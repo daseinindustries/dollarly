@@ -144,13 +144,13 @@ public class PaymentSvcPaypalImpl extends PaymentSvcImpl
     {
         BigDecimal total = iouOrderSvc.getPayerPastPayTotalSince(payment.getPayerUserId(), windowStartDate());
         total = total.add(payment.getAmount());
-        return total.compareTo(SPENDING_LIMIT_AMOUNT) < 0;
+        return total.compareTo(SPENDING_LIMIT_AMOUNT) <= 0;
     }
     
     @Override
     public boolean isLessThanMaxAllowable(Payment payment)
     {
-        return payment.getAmount().compareTo(TX_MAX_AMOUNT) < 0;
+        return payment.getAmount().compareTo(TX_MAX_AMOUNT) <= 0;
     }
 
 }
