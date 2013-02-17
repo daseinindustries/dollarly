@@ -55,7 +55,16 @@ class SmsActor(iouOrderSvc: IouOrderSvc, userUrl: String, userNameUrl: String, l
         case sms: Sms =>
           parse(sms) match {
             case Some(tx) =>
+              /*
+               * OLD PAYPAL LIMITATION 'FRONT DOOR'
+               * 
             	val limit = new BigDecimal("25.00").setScale(2)
+            	 else if (tx.getAmount().compareTo(limit) == 1)
+              {
+                confirmationSvc.createAndSendLimitNotAllowed(payerPhone, tx);
+              }
+              * 
+              */
               val iou = new IouOrder(tx)
               var payerPhone: JavaLong = new JavaLong(sms.getSenderPhone());
 
@@ -63,10 +72,6 @@ class SmsActor(iouOrderSvc: IouOrderSvc, userUrl: String, userNameUrl: String, l
               {
                 confirmationSvc.createAndSendNegativeAmountNotAllowedMessage(payerPhone, tx)
               } 
-              else if (tx.getAmount().compareTo(limit) == 1)
-              {
-                confirmationSvc.createAndSendLimitNotAllowed(payerPhone, tx);
-              }
               else 
               {
 
