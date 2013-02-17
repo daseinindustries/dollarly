@@ -91,6 +91,12 @@ public abstract class PaymentSvcImpl implements PaymentSvc
         return true;
     }
     
+    @Override
+    public boolean isLessThanMaxAllowable(Payment payment)
+    {
+        return true;
+    }
+
     protected Date windowStartDate()
     {
         Calendar cal = Calendar.getInstance();

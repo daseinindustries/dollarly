@@ -62,6 +62,11 @@ class PaymentProcessor(iouOrderSvc: IouOrderSvc, paySvc: PaymentSvc,
           return
         }
         
+        if(!paySvc.isLessThanMaxAllowable(lockedPayment)) {
+          txAmountFail(payer, lockedPayment, po)
+          return
+        }
+        
         paySvc.execute(lockedPayment, payer, payee)
         if (lockedPayment.getStatus == Status.PROCESSED) {
           po.succeed()
@@ -117,12 +122,12 @@ class PaymentProcessor(iouOrderSvc: IouOrderSvc, paySvc: PaymentSvc,
     payment.fail("Spending limit would be exceeded by this payment at this time.")
     paySvc.update(payment)
     msgSvc.createAndSendPayPalLimits(payer.getPhone(), po)
-    /*
-    msgSvc.sendSms(payer.getPhone,
-      "This payment would cause you to exceed your per-week spending limit. " +
-        "See your ledger for more details.")
-        
-        */
+  }
+  
+  private def txAmountFail(payer: User, payment: Payment, po: IouOrder) {
+    payment.fail("Maximum transaction amount exceeded by this payment.")
+    paySvc.update(payment)
+    msgSvc.sendSms(payer.getPhone, "Maximum transaction amount exceeded by this payment.")
   }
   
 }

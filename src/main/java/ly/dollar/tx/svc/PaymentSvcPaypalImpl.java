@@ -146,5 +146,11 @@ public class PaymentSvcPaypalImpl extends PaymentSvcImpl
         total = total.add(payment.getAmount());
         return total.compareTo(SPENDING_LIMIT_AMOUNT) < 0;
     }
+    
+    @Override
+    public boolean isLessThanMaxAllowable(Payment payment)
+    {
+        return payment.getAmount().compareTo(TX_MAX_AMOUNT) < 0;
+    }
 
 }

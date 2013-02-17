@@ -17,17 +17,17 @@ import ly.dollar.tx.svc.PaymentSvc;
 @Path("spending-limit")
 public class UserSpendingLimitResource
 {
-    
+
     private IouOrderSvc iouOrderSvc;
-    
+
     @GET
     @Path("{userId}")
     @Produces("application/json")
     public UserSpendingLimit get(@PathParam("userId") String userId)
     {
         UserSpendingLimit usl = new UserSpendingLimit();
-        
-        BigDecimal spent = new BigDecimal("0");
+
+        BigDecimal spent = BigDecimal.ZERO;
         for (IouOrder iou : iouOrderSvc.getPayerIousSince(userId, windowStartDate()))
         {
             if (iou.getStatus() == IouOrder.Status.PAID)
@@ -36,9 +36,9 @@ public class UserSpendingLimitResource
                 usl.addClearance(iou);
             }
         }
-        
+
         usl.setProximity(PaymentSvc.SPENDING_LIMIT_AMOUNT.subtract(spent));
-        
+
         return usl;
     }
 
@@ -46,12 +46,13 @@ public class UserSpendingLimitResource
     {
         this.iouOrderSvc = iouOrderSvc;
     }
-    
+
+    // TODO = Move this out into a DateUtil
     private static Date windowStartDate()
     {
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.DATE, -PaymentSvc.SPENDING_LIMIT_WINDOW_DAYS);
         return cal.getTime();
     }
-    
+
 }
