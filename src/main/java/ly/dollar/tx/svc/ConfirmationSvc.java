@@ -130,7 +130,7 @@ public class ConfirmationSvc {
 		String ms = m.getMessageBody();
 		String amount = ms.replaceFirst("@amount", tx.getAmount()
 				.toPlainString());
-		String payee = amount.replaceAll("@payee", tx.getMention());
+		String payee = amount.replaceAll("@payee", tx.getPayeeHandle());
 		String hashtag = payee.replaceAll("@hashtag", tx.getHashtag());
 
 		this.sendSms(phone, hashtag);
