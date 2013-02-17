@@ -125,7 +125,7 @@ public class ConfirmationSvc {
 
 	}
 	
-	public void createAndSendLimitNotAllowed(Long phone, TransactionIntent tx){
+	public void createAndSendLimitNotAllowed(Long phone, IouOrder tx){
 		UserMessage m = userMessageDao.findByType("TX_LIMIT_NOT_ALLOWED");
 		String ms = m.getMessageBody();
 		String amount = ms.replaceFirst("@amount", tx.getAmount()
