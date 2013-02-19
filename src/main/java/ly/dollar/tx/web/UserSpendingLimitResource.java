@@ -8,6 +8,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 
 import ly.dollar.tx.entity.IouOrder;
 import ly.dollar.tx.entity.UserSpendingLimit;
@@ -23,7 +24,8 @@ public class UserSpendingLimitResource
     @GET
     @Path("{userId}")
     @Produces("application/json")
-    public UserSpendingLimit get(@PathParam("userId") String userId)
+    public UserSpendingLimit get(@PathParam("userId") String userId,
+    		@QueryParam("amount") BigDecimal amount)
     {
         UserSpendingLimit usl = new UserSpendingLimit();
 
@@ -38,7 +40,9 @@ public class UserSpendingLimitResource
         }
 
         usl.setProximity(PaymentSvc.SPENDING_LIMIT_AMOUNT.subtract(spent));
-
+        if(amount != null){
+            usl.calculateClearableDate(amount);
+        }
         return usl;
     }
 

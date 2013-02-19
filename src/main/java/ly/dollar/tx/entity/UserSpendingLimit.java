@@ -6,8 +6,13 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
+import org.codehaus.jackson.map.annotate.JsonSerialize;
+
 import ly.dollar.tx.svc.PaymentSvc;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonSerialize(include=JsonSerialize.Inclusion.NON_NULL)
 public class UserSpendingLimit
 {
     // Hard limit details (May be per-user in the future?)
@@ -17,6 +22,8 @@ public class UserSpendingLimit
     // User's current status
     private BigDecimal proximity; // Dollars until limit is reached
     private final List<Clearance> clearances = new LinkedList<Clearance>();
+    private Date clearableDate;
+    private BigDecimal forAmount;
     
     public BigDecimal getLimit()
     {
@@ -48,7 +55,23 @@ public class UserSpendingLimit
         clearances.add(new Clearance(iou));
     }
 
-    /**
+	public BigDecimal getForAmount() {
+		return forAmount;
+	}
+
+	public void setForAmount(BigDecimal amount) {
+		this.forAmount = amount;
+	}
+	
+    public Date getClearableDate() {
+		return clearableDate;
+	}
+
+	public void setClearableDate(Date clearableDate) {
+		this.clearableDate = clearableDate;
+	}
+
+	/**
      * A 'Clearance' is an amount/date pair representing a point 
      * in time when the amount will no longer count towards the user's spending limit.
      */
@@ -91,4 +114,35 @@ public class UserSpendingLimit
             return cal.getTime();
         }
     }
+
+	public void calculateClearableDate(BigDecimal amount) {
+		BigDecimal delta = this.proximity.subtract(amount);
+		if(delta.compareTo(BigDecimal.ZERO) == -1)
+		{
+			//calculate
+			for(Clearance c : this.clearances){
+				delta = delta.add(c.getAmount());
+				if(delta.compareTo(BigDecimal.ZERO) > -1)
+				{
+					this.forAmount = amount;
+					this.clearableDate = c.getClearsOn();
+					break;
+				}
+			}
+			if(this.forAmount == null)
+			{	
+				//if we never find a date, return null date indicating NEVER
+				this.forAmount = amount;
+			}
+		}
+		else
+		{
+			//if zero or greater, set now()
+			this.forAmount = amount;
+			Calendar cal = Calendar.getInstance();
+			this.clearableDate = cal.getTime();
+		}
+	}
+
+
 }
