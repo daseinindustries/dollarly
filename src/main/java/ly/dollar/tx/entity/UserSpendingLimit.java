@@ -119,18 +119,18 @@ public class UserSpendingLimit
      */
     public static class Availablity
     {
-        private final String id;
+        private final String iouId;
         private Date availableOn;
 
         public Availablity(IouOrder iou, BigDecimal proximity, List<Clearance> clearances)
         {
-            id = iou.getId();
+            iouId = iou.getId();
             init(iou, proximity, clearances);
         }
 
-        public String getId()
+        public String getIouId()
         {
-            return id;
+            return iouId;
         }
 
         public Date getAvailableOn()
