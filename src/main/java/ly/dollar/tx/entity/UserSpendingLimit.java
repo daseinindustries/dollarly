@@ -67,10 +67,10 @@ public class UserSpendingLimit
     public void addAvailablity(IouOrder iou)
     {
         Availablity a = new Availablity(iou, proximity, clearances);
-        if (a.availableOn.after(new Date()))
-        {
+        //if (a.availableOn.after(new Date()))
+        //{
             availablities.add(a);
-        }
+        //}
     }
 
     /**
