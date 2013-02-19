@@ -22,8 +22,7 @@ public class UserSpendingLimit
     // User's current status
     private BigDecimal proximity; // Dollars until limit is reached
     private final List<Clearance> clearances = new LinkedList<Clearance>();
-    private Date clearableDate;
-    private BigDecimal forAmount;
+    private final List<Availablity> availablities = new LinkedList<Availablity>();
     
     public BigDecimal getLimit()
     {
@@ -55,23 +54,22 @@ public class UserSpendingLimit
         clearances.add(new Clearance(iou));
     }
 
-	public BigDecimal getForAmount() {
-		return forAmount;
-	}
+	public List<Availablity> getAvailablities()
+    {
+        return availablities;
+    }
 
-	public void setForAmount(BigDecimal amount) {
-		this.forAmount = amount;
-	}
-	
-    public Date getClearableDate() {
-		return clearableDate;
-	}
+	/*
+	 * Warning! The availability of an Iou will be calculated 
+	 * with the Clearances and proximity of the instance.
+	 * I.e. add all Clearances before adding an Availability.
+	 */
+    public void addAvailablity(IouOrder iou)
+    {
+        availablities.add(new Availablity(iou, proximity, clearances));
+    }
 
-	public void setClearableDate(Date clearableDate) {
-		this.clearableDate = clearableDate;
-	}
-
-	/**
+    /**
      * A 'Clearance' is an amount/date pair representing a point 
      * in time when the amount will no longer count towards the user's spending limit.
      */
@@ -114,35 +112,62 @@ public class UserSpendingLimit
             return cal.getTime();
         }
     }
+    
+    /**
+     * A 'Availablity' is an iou/date pair representing a point 
+     * in time when an open iou would be within the spending limits.
+     */
+    public static class Availablity
+    {
+        private String id;
+        private Date availableOn;
 
-	public void calculateClearableDate(BigDecimal amount) {
-		BigDecimal delta = this.proximity.subtract(amount);
-		if(delta.compareTo(BigDecimal.ZERO) == -1)
-		{
-			//calculate
-			for(Clearance c : this.clearances){
-				delta = delta.add(c.getAmount());
-				if(delta.compareTo(BigDecimal.ZERO) > -1)
-				{
-					this.forAmount = amount;
-					this.clearableDate = c.getClearsOn();
-					break;
-				}
-			}
-			if(this.forAmount == null)
-			{	
-				//if we never find a date, return null date indicating NEVER
-				this.forAmount = amount;
-			}
-		}
-		else
-		{
-			//if zero or greater, set now()
-			this.forAmount = amount;
-			Calendar cal = Calendar.getInstance();
-			this.clearableDate = cal.getTime();
-		}
-	}
+        public Availablity(IouOrder iou, BigDecimal proximity, List<Clearance> clearances)
+        {
+            id = iou.getId();
+            init(iou, proximity, clearances);
+        }
 
+        public String getId()
+        {
+            return id;
+        }
+
+        public void setId(String id)
+        {
+            this.id = id;
+        }
+
+        public Date getAvailableOn()
+        {
+            return availableOn;
+        }
+
+        public void setAvailableOn(Date availableOn)
+        {
+            this.availableOn = availableOn;
+        }
+
+        private void init(IouOrder iou, BigDecimal proximity, List<Clearance> clearances)
+        {
+            BigDecimal delta = proximity.subtract(iou.getAmount());
+            if (delta.compareTo(BigDecimal.ZERO) == -1)
+            {
+                for (Clearance c : clearances)
+                {
+                    delta = delta.add(c.getAmount());
+                    if (delta.compareTo(BigDecimal.ZERO) > -1)
+                    {
+                        this.availableOn = c.getClearsOn();
+                        break;
+                    }
+                }
+            } 
+            else
+            {
+                this.availableOn = Calendar.getInstance().getTime();
+            }
+        }
+    }
 
 }
