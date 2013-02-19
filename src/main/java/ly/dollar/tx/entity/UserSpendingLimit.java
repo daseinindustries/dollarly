@@ -119,7 +119,7 @@ public class UserSpendingLimit
      */
     public static class Availablity
     {
-        private String id;
+        private final String id;
         private Date availableOn;
 
         public Availablity(IouOrder iou, BigDecimal proximity, List<Clearance> clearances)
@@ -133,19 +133,9 @@ public class UserSpendingLimit
             return id;
         }
 
-        public void setId(String id)
-        {
-            this.id = id;
-        }
-
         public Date getAvailableOn()
         {
             return availableOn;
-        }
-
-        public void setAvailableOn(Date availableOn)
-        {
-            this.availableOn = availableOn;
         }
 
         private void init(IouOrder iou, BigDecimal proximity, List<Clearance> clearances)
